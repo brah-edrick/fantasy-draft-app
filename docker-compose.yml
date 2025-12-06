@@ -1,0 +1,39 @@
+services:
+  # 1. The Database Service
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=fantasy_user
+      - POSTGRES_PASSWORD=secret_password
+      - POSTGRES_DB=fantasy_db
+    ports:
+      - "5432:5432" # Allows you to connect via TablePlus/DBeaver on localhost:5432
+    volumes:
+      # This maps your local schema.sql to the container's init folder
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      # Persist data so it doesn't vanish when you restart docker
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fantasy_user -d fantasy_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. The Go Application Service
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # NOTICE: Host is 'db' (the service name), not 'localhost'
+      - DATABASE_URL=postgres://fantasy_user:secret_password@db:5432/fantasy_db?sslmode=disable
+    volumes:
+      # Sync your local folder to the container so changes reflect instantly
+      - .:/app
+
+volumes:
+  postgres_data:
