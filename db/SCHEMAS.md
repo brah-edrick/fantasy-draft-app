@@ -1,3 +1,113 @@
+# Database Schema Planning
+
+## Planning
+
+### 1. Enums
+*   `position_enum`: 
+    *   Football: 'QB', 'RB', 'WR', 'TE', 'K', 'DST'
+    *   Basketball: 'PG', 'SG', 'SF', 'PF', 'C'
+    *   Baseball: 'SP', 'RP', 'CATCHER', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'
+*   `player_status_enum`: 'ACTIVE', 'INJURED', 'PUP', 'SUSPENDED', 'RETIRED'
+*   `sport_type_enum`: 'FOOTBALL', 'BASKETBALL', 'BASEBALL'
+*   `draft_room_status_enum`: 'WAITING', 'DRAFTING', 'PAUSED', 'COMPLETE'
+
+### 2. Conferences
+*   `id` (UUID, PK)
+*   `name` (Text, Not Null)
+
+### 3. Divisions
+*   `id` (UUID, PK)
+*   `name` (Text, Not Null)
+*   `conference_id` (UUID, FK -> Conferences)
+
+### 4. Pro Teams (Real Life Teams)
+*   `id` (UUID, PK)
+*   `city` (Text, Not Null)
+*   `name` (Text, Not Null)
+*   `abbreviation` (Text, Not Null) -- e.g. "MIN"
+*   `logo_url` (Text)
+*   `year_established` (Int)
+*   `division_id` (UUID, FK -> Divisions)
+
+### 5. Players
+*   `id` (UUID, PK)
+*   `first_name` (Text, Not Null)
+*   `last_name` (Text, Not Null)
+*   `position` (position_enum, Not Null)
+*   `team_id` (UUID, FK -> ProTeams)
+*   `height` (Int) -- in inches
+*   `weight` (Int) -- in lbs
+*   `age` (Int)
+*   `years_of_experience` (Int, CHECK >= 0) -- 0 = Rookie
+*   `jersey_number` (Int)
+*   `status` (player_status_enum, Default 'ACTIVE')
+*   `position_skill_factor` (Decimal)
+*   `headshot_url` (Text)
+*   `created_at`, `updated_at` (Timestamps)
+
+### 6. Yearly Stats
+This needs to be flexible across sports.
+*   `id` (UUID, PK)
+*   `player_id` (UUID, FK -> Players)
+*   `sport_type` (sport_type_enum, Not Null)
+*   `year` (Int, Not Null)
+*   `stats` (JSONB) -- *Stores the varied data structure.*
+*   `fantasy_points` (Decimal, Default 0)
+*   `projected_fantasy_points` (Decimal, Default 0)
+*   `is_projected` (Boolean, Default False)
+*   `games_played` (Int, CHECK >= 0)
+*   `fantasy_points_per_game` (Decimal, Computed) -- *GENERATED ALWAYS AS (fantasy_points / NULLIF(games_played, 0)) STORED*
+*   `created_at` (Timestamp)
+
+### 7. Ranking Lists (Metadata)
+*   `id` (UUID, PK)
+*   `title` (Text, Not Null)
+*   `author` (Text, Not Null)
+*   `created_at`, `updated_at` (Timestamps)
+
+### 8. Rankings (The actual ranks)
+*   `id` (UUID, PK)
+*   `ranking_list_id` (UUID, FK -> RankingLists)
+*   `player_id` (UUID, FK -> Players)
+*   `rank` (Int, CHECK > 0)
+*   *Constraint*: UNIQUE (ranking_list_id, player_id)
+*   *Constraint*: UNIQUE (ranking_list_id, rank)
+
+### 9. Draft Rooms
+*   `id` (UUID, PK)
+*   `status` (draft_room_status_enum, Default 'WAITING')
+*   `timer_duration` (Int, Default 60)
+*   `created_at`, `updated_at` (Timestamps)
+
+### 10. Team Depth Charts (Pro Domain)
+*   `id` (UUID, PK)
+*   `team_id` (UUID, FK -> ProTeams)
+*   `player_id` (UUID, FK -> Players)
+*   `rank` (Int, CHECK > 0) -- 1 = Starter, 2 = Backup
+*   `position` (position_enum, Not Null) -- Specific position for this depth slot
+*   `updated_at` (Timestamp)
+*   *Constraint*: UNIQUE (team_id, position, rank) -- Only one QB1 per team.
+
+### 11. Fantasy Teams (The User's Team in a Room)
+*   `id` (UUID, PK)
+*   `draft_room_id` (UUID, FK -> DraftRooms)
+*   `user_id` (UUID, FK -> Users) -- Nullable if Bot?
+*   `name` (Text)
+*   `draft_order_number` (Int) -- 1st pick, 2nd pick...
+*   `is_bot` (Boolean, Default False)
+*   `created_at` (Timestamp)
+
+### 12. Fantasy Rosters (The Result of the Draft)
+*   `id` (UUID, PK)
+*   `fantasy_team_id` (UUID, FK -> FantasyTeams)
+*   `player_id` (UUID, FK -> Players)
+*   `roster_spot` (Text, Not Null) -- 'QB', 'WR1', 'BN', 'IR'
+*   `created_at` (Timestamp)
+*   *Constraint*: UNIQUE (fantasy_team_id, player_id) -- Player can't be on team twice.
+
+## Implementation (SQL)
+
+```sql
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -156,3 +266,4 @@ CREATE TABLE fantasy_rosters (
     
     UNIQUE (fantasy_team_id, player_id)
 );
+```
