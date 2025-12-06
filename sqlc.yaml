@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - schema: "db/schema.sql"
+    queries: "db/query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "db"
+        out: "internal/db"
+        # Use pgx/v5 types (standard for modern Go)
+        sql_package: "pgx/v5"

@@ -15,5 +15,5 @@ RUN go mod download
 # Copy the rest of the app
 COPY . .
 
-# Run "air" instead of "go run"
-CMD ["air"]
+# Run "air" with explicit config
+CMD ["air", "-c", "air.toml"]
