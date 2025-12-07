@@ -22,7 +22,7 @@ func generateLeaugeData() {
 		// running from inside synthetic-data
 		outputDir = ".output"
 	}
-	
+
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		log.Fatalf("Failed to create output directory: %v", err)
 	}
@@ -56,7 +56,7 @@ func exportPlayerStats() {
 		// running from inside synthetic-data
 		outputDir = ".output"
 	}
-	
+
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		log.Fatalf("Failed to create output directory: %v", err)
 	}

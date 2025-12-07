@@ -34,8 +34,8 @@ type League struct {
 }
 
 type Conference struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Division struct {
@@ -45,25 +45,25 @@ type Division struct {
 }
 
 type Team struct {
-	ID         string   `json:"id"`
-	City       string   `json:"city"`
-	State      string   `json:"state"` // Added per request
-	Name       string   `json:"name"`
-	Abbr       string   `json:"abbr"`
-	DivisionID string   `json:"division_id"`
+	ID         string `json:"id"`
+	City       string `json:"city"`
+	State      string `json:"state"` // Added per request
+	Name       string `json:"name"`
+	Abbr       string `json:"abbr"`
+	DivisionID string `json:"division_id"`
 }
 
 type Player struct {
-	ID                  string  `json:"id"`
-	FirstName           string  `json:"first_name"`
-	LastName            string  `json:"last_name"`
-	Position            string  `json:"position"`
-	TeamID              string  `json:"team_id"`
-	Height              int     `json:"height"`
-	Weight              int     `json:"weight"`
-	Age                 int     `json:"age"`
-	YearsOfExperience   int     `json:"years_of_experience"`
-	DraftYear           int     `json:"draft_year"`
-	Skill               float64 `json:"skill"` // 0.0 - 1.0
-	Status              string  `json:"status"`
+	ID                string  `json:"id"`
+	FirstName         string  `json:"first_name"`
+	LastName          string  `json:"last_name"`
+	Position          string  `json:"position"`
+	TeamID            string  `json:"team_id"`
+	Height            int     `json:"height"`
+	Weight            int     `json:"weight"`
+	Age               int     `json:"age"`
+	YearsOfExperience int     `json:"years_of_experience"`
+	DraftYear         int     `json:"draft_year"`
+	Skill             float64 `json:"skill"` // 0.0 - 1.0
+	Status            string  `json:"status"`
 }

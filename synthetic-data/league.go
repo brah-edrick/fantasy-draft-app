@@ -8,10 +8,10 @@ import (
 
 // Franchise represents a pre-defined cool team identity
 type Franchise struct {
-	City   string
-	State  string
-	Name   string
-	Abbr   string
+	City  string
+	State string
+	Name  string
+	Abbr  string
 }
 
 // A curated list of 32 non-sucky synthetic teams
@@ -54,7 +54,6 @@ var availableFranchises = []Franchise{
 	{"Denver", "CO", "Summits", "DEN"},
 }
 
-
 func GenerateConference(name string) Conference {
 	return Conference{
 		ID:   uuid.NewString(),
@@ -64,20 +63,20 @@ func GenerateConference(name string) Conference {
 
 func GenerateDivision(name string, conferenceID string) Division {
 	return Division{
-		ID:   uuid.NewString(),
-		Name: name,
+		ID:           uuid.NewString(),
+		Name:         name,
 		ConferenceID: conferenceID,
 	}
 }
 
 func GenerateTeam(franchise Franchise, divisionID string) Team {
 	return Team{
-		ID:   uuid.NewString(),
-		Name: franchise.Name,
+		ID:         uuid.NewString(),
+		Name:       franchise.Name,
 		DivisionID: divisionID,
-		City: franchise.City,
-		State: franchise.State,
-		Abbr: franchise.Abbr,
+		City:       franchise.City,
+		State:      franchise.State,
+		Abbr:       franchise.Abbr,
 	}
 }
 
@@ -91,27 +90,26 @@ func GenerateLeagueFlat() LeagueFlat {
 	returnValue := LeagueFlat{}
 
 	// Generate Conferences
-	confNames := []string{"Union Conference", "Alliance Conference"};
-	generatedConferences := make([]Conference, len(confNames));
+	confNames := []string{"Union Conference", "Alliance Conference"}
+	generatedConferences := make([]Conference, len(confNames))
 	for confIndex, confName := range confNames {
 		generatedConferences[confIndex] = GenerateConference(confName)
 	}
-	returnValue.Conferences = generatedConferences;
+	returnValue.Conferences = generatedConferences
 
 	// Generate Divisions
 	divisionNames := []string{"North", "South", "East", "West"}
-	generatedDivisions := make([]Division, len(divisionNames)*len(generatedConferences));
+	generatedDivisions := make([]Division, len(divisionNames)*len(generatedConferences))
 	for confIndex, generatedConference := range generatedConferences {
 		for divIndex, divName := range divisionNames {
 			generatedDivisions[confIndex*len(divisionNames)+divIndex] = GenerateDivision(divName, generatedConference.ID)
 		}
 	}
-	returnValue.Divisions = generatedDivisions;
-
+	returnValue.Divisions = generatedDivisions
 
 	// Generate Teams
 	copyOfAvailableFranchises := availableFranchises
-	generatedTeams := make([]Team, len(copyOfAvailableFranchises));
+	generatedTeams := make([]Team, len(copyOfAvailableFranchises))
 	for divisionIndex, generatedDivision := range generatedDivisions {
 		// each division has 4 teams
 		divisionSize := 4
@@ -123,7 +121,7 @@ func GenerateLeagueFlat() LeagueFlat {
 		}
 
 	}
-	returnValue.Teams = generatedTeams;
+	returnValue.Teams = generatedTeams
 
 	return returnValue
 }

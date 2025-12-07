@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"encoding/json"
-	"time"
+	"fmt"
 	"log"
+	"os"
 	"strconv"
+	"time"
 )
 
 /**
@@ -16,45 +16,45 @@ import (
  * aggregated stats that can be used to generate synthetic players.
  * I do not own the source data so it is not included in this repository.
  */
- 
+
 type PlayerNameCount struct {
-	Name string
+	Name  string
 	Count int
 }
 
 type JerseyData struct {
 	Jersey int
-	Count int
+	Count  int
 }
 
 type HeightData struct {
 	Height int
-	Count int
+	Count  int
 }
 
 type WeightData struct {
 	Weight int
-	Count int
+	Count  int
 }
 
 type AgeData struct {
-	Age int
+	Age   int
 	Count int
 }
 
 type YearsOfExperienceData struct {
 	YearsOfExperience int
-	Count int
+	Count             int
 }
 
 type PlayerStat struct {
-	FirstName string
-	LastName string
-	Height int
-	Weight int
-	Jersey int
-	Age int
-	Position string
+	FirstName         string
+	LastName          string
+	Height            int
+	Weight            int
+	Jersey            int
+	Age               int
+	Position          string
 	YearsOfExperience int
 }
 
@@ -80,7 +80,7 @@ func NewPositionProfile() *PositionProfile {
 }
 
 func importRealData() map[string]interface{} {
-	file, err := os.Open("synthetic-data/real-data.json") // you'll need to provide this file in the format specified 
+	file, err := os.Open("synthetic-data/real-data.json") // you'll need to provide this file in the format specified
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
 	}
@@ -120,20 +120,20 @@ func collectPlayerStats(data map[string]interface{}) []PlayerStat {
 }
 
 func aggregateStatsByPosition(stats []PlayerStat) map[string]*PositionProfile {
-		aggregatedStats := make(map[string]*PositionProfile)
+	aggregatedStats := make(map[string]*PositionProfile)
 
-		for _, stat := range stats {
-			prof, ok := aggregatedStats[stat.Position]
-			if !ok {
-				prof = NewPositionProfile()
-				aggregatedStats[stat.Position] = prof
-			}
+	for _, stat := range stats {
+		prof, ok := aggregatedStats[stat.Position]
+		if !ok {
+			prof = NewPositionProfile()
+			aggregatedStats[stat.Position] = prof
+		}
 
-			prof.Jerseys[stat.Jersey]++
-			prof.Heights[stat.Height]++
-			prof.Weights[stat.Weight]++
-			prof.Ages[stat.Age]++
-			prof.YearsOfExperience[stat.YearsOfExperience]++
+		prof.Jerseys[stat.Jersey]++
+		prof.Heights[stat.Height]++
+		prof.Weights[stat.Weight]++
+		prof.Ages[stat.Age]++
+		prof.YearsOfExperience[stat.YearsOfExperience]++
 
 	}
 	return aggregatedStats
@@ -220,27 +220,32 @@ func normalizePlayerData(data map[string]interface{}) (PlayerStat, error) {
 	// Safely assert other fields
 	firstName, _ := data["firstName"].(string)
 	lastName, _ := data["lastName"].(string)
-	
+
 	var height, weight, jersey, age int
-	
-	if h, ok := data["height"].(float64); ok { height = int(h) }
-	if w, ok := data["weight"].(float64); ok { weight = int(w) }
-	if j, ok := data["jersey"].(string); ok { 
+
+	if h, ok := data["height"].(float64); ok {
+		height = int(h)
+	}
+	if w, ok := data["weight"].(float64); ok {
+		weight = int(w)
+	}
+	if j, ok := data["jersey"].(string); ok {
 		if val, err := strconv.Atoi(j); err == nil {
 			jersey = val
 		}
 	}
-	if a, ok := data["age"].(float64); ok { age = int(a) }
-	
+	if a, ok := data["age"].(float64); ok {
+		age = int(a)
+	}
 
 	playerStat := PlayerStat{
-		FirstName: firstName,
-		LastName:  lastName,
-		Height:    height,
-		Weight:    weight,
-		Jersey:    jersey,
-		Age:       age,
-		Position:  position,
+		FirstName:         firstName,
+		LastName:          lastName,
+		Height:            height,
+		Weight:            weight,
+		Jersey:            jersey,
+		Age:               age,
+		Position:          position,
 		YearsOfExperience: yearsOfExperience,
 	}
 
