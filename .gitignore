@@ -12,3 +12,8 @@
 
 # Environment
 .env
+
+# Data
+synthetic-data/*.json
+real-data.json
+synthetic-data/.output/
