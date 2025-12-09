@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,7 +34,7 @@ func importPlayerStats() AggregatedPlayerStats {
 }
 
 func createNewPlayer(position Position, teamId string) Player {
-	firstNameGenerator, lastNameGenerator, positionGenerators := createPlayerGeneratorsFromStats()
+	firstNameGenerator, lastNameGenerator, positionGenerators := getPlayerGenerators()
 
 	firstName := firstNameGenerator()
 	lastName := lastNameGenerator()
@@ -94,11 +95,31 @@ type LabeledPositionGenerators struct {
 	Generators   PositionGenerators
 }
 
+var (
+	firstNameGeneratorSingleton func() string
+	lastNameGeneratorSingleton  func() string
+	positionGeneratorsSingleton []LabeledPositionGenerators
+	generatorsOnce              sync.Once
+)
+
+func getPlayerGenerators() (func() string, func() string, []LabeledPositionGenerators) {
+	generatorsOnce.Do(func() {
+		firstNameGeneratorSingleton, lastNameGeneratorSingleton, positionGeneratorsSingleton = createPlayerGeneratorsFromStats()
+	})
+	return firstNameGeneratorSingleton, lastNameGeneratorSingleton, positionGeneratorsSingleton
+}
+
 func createPlayerGeneratorsFromStats() (func() string, func() string, []LabeledPositionGenerators) {
+	fmt.Println("Creating player generators from stats...")
+	fmt.Println("Importing player stats...")
 	stats := importPlayerStats()
+	fmt.Println("Creating first name generator...")
 	firstNameGenerator := createGenerateValueFromStat(stats.FirstNames)
+	fmt.Println("Creating last name generator...")
 	lastNameGenerator := createGenerateValueFromStat(stats.LastNames)
+	fmt.Println("Creating position generators...")
 	positionGenerators := createPositionsGeneratorsFromStats(stats)
+	fmt.Println("Player generators created successfully.")
 	return firstNameGenerator, lastNameGenerator, positionGenerators
 }
 
