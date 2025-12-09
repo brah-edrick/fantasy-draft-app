@@ -19,12 +19,11 @@ type RosterComposition map[string]int
 
 // NFLRosterComposition is our standard definition for a valid team.
 var NFLRosterComposition = RosterComposition{
-	"QB":  3,
-	"RB":  4,
-	"WR":  6,
-	"TE":  3,
-	"K":   1,
-	"DST": 1,
+	"QB": 3,
+	"RB": 4,
+	"WR": 6,
+	"TE": 3,
+	"K":  1,
 }
 
 // --- Data Model Structs (for JSON Export) ---
@@ -66,4 +65,5 @@ type Player struct {
 	DraftYear         int     `json:"draft_year"`
 	Skill             float64 `json:"skill"` // 0.0 - 1.0
 	Status            string  `json:"status"`
+	Jersey            int     `json:"jersey"`
 }

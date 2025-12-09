@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
-	"time"
 )
 
 func generateLeaugeData() {
@@ -78,9 +76,10 @@ func exportPlayerStats() {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	log.Println("Starting Synthetic Data Generation...")
 
 	generateLeaugeData()
 	exportPlayerStats()
+	createNewPlayer("PK", "1")
+	createNewPlayer("QB", "1")
 }
