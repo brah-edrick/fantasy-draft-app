@@ -10,23 +10,23 @@ func createTeamRoster(teamID string) NFLTeamRoster {
 	pkCount := NFLRosterComposition["PK"]
 
 	qbPlayers := make([]Player, qbCount)
-	for qbIndex := 0; qbIndex < qbCount; qbIndex++ {
+	for qbIndex := range qbCount {
 		qbPlayers[qbIndex] = createNewPlayer(QB, teamID)
 	}
 	rbPlayers := make([]Player, rbCount)
-	for rbIndex := 0; rbIndex < rbCount; rbIndex++ {
+	for rbIndex := range rbCount {
 		rbPlayers[rbIndex] = createNewPlayer(RB, teamID)
 	}
 	wrPlayers := make([]Player, wrCount)
-	for wrIndex := 0; wrIndex < wrCount; wrIndex++ {
+	for wrIndex := range wrCount {
 		wrPlayers[wrIndex] = createNewPlayer(WR, teamID)
 	}
 	tePlayers := make([]Player, teCount)
-	for teIndex := 0; teIndex < teCount; teIndex++ {
+	for teIndex := range teCount {
 		tePlayers[teIndex] = createNewPlayer(TE, teamID)
 	}
 	pkPlayers := make([]Player, pkCount)
-	for pkIndex := 0; pkIndex < pkCount; pkIndex++ {
+	for pkIndex := range pkCount {
 		pkPlayers[pkIndex] = createNewPlayer(PK, teamID)
 	}
 
