@@ -1,17 +1,5 @@
 package main
 
-// types.go defines the data structures we use during generation.
-// We use the 'main' package here so it can share visibility with our executable script.
-
-// --- Generator Config Types ---
-
-// GeneratorSource holds the raw ingredients we need to cook up a player.
-type GeneratorSource struct {
-	FirstNames []string
-	LastNames  []string
-	// We will eventually add "AgeDistribution" maps here
-}
-
 // RosterComposition dictates how a team is built.
 // Instead of random chance, we force a specific structure.
 // Key = Position (e.g., "QB"), Value = Quantity (e.g., 3).
