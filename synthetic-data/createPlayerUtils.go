@@ -18,6 +18,7 @@ import (
 // T must be 'ordered' (int, string, float64) to be sorted for CDF.
 type Distribution[T cmp.Ordered] map[T]int
 
+// TODO don't read from file, we're going to have players in memory
 func importPlayerStats() AggregatedPlayerStats {
 	file, err := os.Open("synthetic-data/.output/player_stats.json")
 	if err != nil {
@@ -151,7 +152,7 @@ func CreatePositionAttributeGenerators(profile *PositionProfile) PositionGenerat
 	}
 }
 
-type StatisticToCdf[T cmp.Ordered] struct {
+type StatisticToCDF[T cmp.Ordered] struct {
 	Values []T
 	CDF    []float64
 }
@@ -159,7 +160,7 @@ type StatisticToCdf[T cmp.Ordered] struct {
 // createCdfForStat calculates the Cumulative Distribution Function for a given statistic distribution.
 // It returns a struct containing sorted Values and their corresponding CDF probabilities.
 // This generic function accepts any map with comparable/ordered keys (int, string, etc.) and int values (counts).
-func createCdfForStat[T cmp.Ordered, M ~map[T]int](stats M) *StatisticToCdf[T] {
+func createCDFForStat[T cmp.Ordered, M ~map[T]int](stats M) *StatisticToCDF[T] {
 	// Convert to array
 	keys := make([]T, 0, len(stats))
 	total := 0
@@ -180,26 +181,37 @@ func createCdfForStat[T cmp.Ordered, M ~map[T]int](stats M) *StatisticToCdf[T] {
 	}
 
 	// Return CDF entries
-	return &StatisticToCdf[T]{
+	return &StatisticToCDF[T]{
 		Values: keys,
 		CDF:    cdf,
 	}
 }
 
-func generateValueFromCdf[T cmp.Ordered](cdf *StatisticToCdf[T]) T {
+func generateValueFromCDF[T cmp.Ordered](cdf *StatisticToCDF[T]) T {
 	randomNumber := rand.Float64()
-	for i, cdfValue := range cdf.CDF {
-		if randomNumber < cdfValue {
-			return cdf.Values[i]
-		}
+	index := binarySearchUpperBound(cdf, 0, len(cdf.Values)-1, randomNumber)
+	return cdf.Values[index]
+}
+
+// binarySearchUpperBound returns the index of the first element in the CDF that is greater than or equal to the target value
+func binarySearchUpperBound[T cmp.Ordered](cdf *StatisticToCDF[T], left, right int, target float64) int {
+	if left == right {
+		return left
 	}
-	return cdf.Values[len(cdf.Values)-1]
+
+	midIndex := (left + right) / 2
+
+	if cdf.CDF[midIndex] < target {
+		return binarySearchUpperBound(cdf, midIndex+1, right, target)
+	} else {
+		return binarySearchUpperBound(cdf, left, midIndex, target)
+	}
 }
 
 func createGenerateValueFromStat[T cmp.Ordered, M ~map[T]int](stats M) func() T {
-	cdf := createCdfForStat(stats)
+	cdf := createCDFForStat(stats)
 	return func() T {
-		return generateValueFromCdf(cdf)
+		return generateValueFromCDF(cdf)
 	}
 }
 
