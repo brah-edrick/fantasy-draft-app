@@ -95,7 +95,7 @@ func importRealData() map[string]interface{} {
 	return data
 }
 
-func collectPlayerStats(data map[string]interface{}) []PlayerStat {
+func collectPlayerAttributes(data map[string]interface{}) []PlayerStat {
 
 	athletes, ok := data["athletes"].([]interface{})
 	if !ok {
@@ -119,7 +119,7 @@ func collectPlayerStats(data map[string]interface{}) []PlayerStat {
 	return stats
 }
 
-func aggregateStatsByPosition(stats []PlayerStat) map[string]*PositionProfile {
+func aggregateAttributesByPosition(stats []PlayerStat) map[string]*PositionProfile {
 	aggregatedStats := make(map[string]*PositionProfile)
 
 	for _, stat := range stats {
@@ -163,11 +163,11 @@ type AggregatedPlayerStats struct {
 	LastNames       NameFrequency               `json:"last_names"`
 }
 
-func collectAndAggregatePlayerStats() AggregatedPlayerStats {
+func collectAndAggregatePlayerAttributes() AggregatedPlayerStats {
 	data := importRealData()
-	stats := collectPlayerStats(data)
+	stats := collectPlayerAttributes(data)
 	return AggregatedPlayerStats{
-		PositionProfile: aggregateStatsByPosition(stats),
+		PositionProfile: aggregateAttributesByPosition(stats),
 		FirstNames:      aggregateFirstNames(stats),
 		LastNames:       aggregateLastNames(stats),
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Franchise represents a pre-defined cool team identity
+// Franchise represents a team identity
 type Franchise struct {
 	City  string
 	State string
@@ -14,8 +14,8 @@ type Franchise struct {
 	Abbr  string
 }
 
-// A curated list of 32 non-sucky synthetic teams
-var availableFranchises = []Franchise{
+// A curated list of 32 synthetic teams
+var allAvailableFranchises = []Franchise{
 	{"Austin", "TX", "Desperados", "AUS"},
 	{"Portland", "OR", "Lumberjacks", "POR"},
 	{"Salt Lake", "UT", "Peaks", "SLC"},
@@ -43,7 +43,7 @@ var availableFranchises = []Franchise{
 	{"Milwaukee", "WI", "Hunters", "MIL"},
 	{"Minneapolis", "MN", "Blizzard", "MIN"},
 	// South
-	{"Atlanta", "GA", "Phoenix", "ATL"},
+	{"Atlanta", "GA", "Phoenixes", "ATL"},
 	{"Miami", "FL", "Sharks", "MIA"},
 	{"New Orleans", "LA", "Deltas", "NO"},
 	{"Nashville", "TN", "Strings", "NSH"},
@@ -108,16 +108,16 @@ func GenerateLeagueFlat() LeagueFlat {
 	returnValue.Divisions = generatedDivisions
 
 	// Generate Teams
-	copyOfAvailableFranchises := availableFranchises
-	generatedTeams := make([]Team, len(copyOfAvailableFranchises))
+	availableFranchises := allAvailableFranchises
+	generatedTeams := make([]Team, len(availableFranchises))
 	for divisionIndex, generatedDivision := range generatedDivisions {
 		// each division has 4 teams
 		divisionSize := 4
-		for teamIndex := 0; teamIndex < divisionSize; teamIndex++ {
-			randomIndex := rand.Intn(len(copyOfAvailableFranchises))
-			generatedTeams[divisionIndex*divisionSize+teamIndex] = GenerateTeam(copyOfAvailableFranchises[randomIndex], generatedDivision.ID)
+		for teamIndex := range divisionSize {
+			randomIndex := rand.Intn(len(availableFranchises))
+			generatedTeams[divisionIndex*divisionSize+teamIndex] = GenerateTeam(availableFranchises[randomIndex], generatedDivision.ID)
 			// remove the franchise from the list
-			copyOfAvailableFranchises = append(copyOfAvailableFranchises[:randomIndex], copyOfAvailableFranchises[randomIndex+1:]...)
+			availableFranchises = append(availableFranchises[:randomIndex], availableFranchises[randomIndex+1:]...)
 		}
 
 	}

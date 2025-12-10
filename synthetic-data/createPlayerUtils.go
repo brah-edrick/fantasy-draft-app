@@ -2,11 +2,9 @@ package main
 
 import (
 	"cmp"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"slices"
 	"sync"
 	"time"
@@ -17,22 +15,6 @@ import (
 // Distribution maps a value (T) to its frequency count.
 // T must be 'ordered' (int, string, float64) to be sorted for CDF.
 type Distribution[T cmp.Ordered] map[T]int
-
-// TODO don't read from file, we're going to have players in memory
-func importPlayerStats() AggregatedPlayerStats {
-	file, err := os.Open("synthetic-data/.output/player_stats.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	var playerStats AggregatedPlayerStats
-	if err := json.NewDecoder(file).Decode(&playerStats); err != nil {
-		log.Fatal(err)
-	}
-
-	return playerStats
-}
 
 func createNewPlayer(position Position, teamId string) Player {
 	firstNameGenerator, lastNameGenerator, positionGenerators := getPlayerGenerators()
@@ -50,8 +32,8 @@ func createNewPlayer(position Position, teamId string) Player {
 	weight := positionGenerators[positionIndex].Generators.WeightGenerator()
 	age := positionGenerators[positionIndex].Generators.AgeGenerator()
 	yoe := positionGenerators[positionIndex].Generators.YoeGenerator()
-
 	thisYear := time.Now().Year()
+
 	player := Player{
 		ID:                uuid.New().String(),
 		DraftYear:         thisYear - yoe,
@@ -67,8 +49,6 @@ func createNewPlayer(position Position, teamId string) Player {
 		Skill:             createRandomSkillFactorWithBellCurve(),
 		TeamID:            teamId,
 	}
-
-	fmt.Printf("Player created: %+v\n", player)
 
 	return player
 }
@@ -111,9 +91,9 @@ func getPlayerGenerators() (func() string, func() string, []LabeledPositionGener
 }
 
 func createPlayerGeneratorsFromStats() (func() string, func() string, []LabeledPositionGenerators) {
-	fmt.Println("Creating player generators from stats...")
-	fmt.Println("Importing player stats...")
-	stats := importPlayerStats()
+	fmt.Println("Creating player generators from real player stats...")
+	fmt.Println("Aggregating player stats...")
+	stats := collectAndAggregatePlayerAttributes()
 	fmt.Println("Creating first name generator...")
 	firstNameGenerator := createGenerateValueFromStat(stats.FirstNames)
 	fmt.Println("Creating last name generator...")
