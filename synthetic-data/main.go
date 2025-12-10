@@ -77,9 +77,10 @@ func exportPlayerStats() {
 
 func main() {
 	log.Println("Starting Synthetic Data Generation...")
-
+	log.Println("Generating League Data...")
 	generateLeaugeData()
+	log.Println("Exporting Player Stats...")
 	exportPlayerStats()
-	createNewPlayer("PK", "1")
-	createNewPlayer("QB", "1")
+	log.Println("Creating Sample Team Roster...")
+	createTeamRoster("1")
 }

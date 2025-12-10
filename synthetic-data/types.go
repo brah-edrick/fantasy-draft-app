@@ -23,7 +23,15 @@ var NFLRosterComposition = RosterComposition{
 	"RB": 4,
 	"WR": 6,
 	"TE": 3,
-	"K":  1,
+	"PK": 1,
+}
+
+type NFLTeamRoster struct {
+	QB []Player
+	RB []Player
+	WR []Player
+	TE []Player
+	PK []Player
 }
 
 // --- Data Model Structs (for JSON Export) ---
