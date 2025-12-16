@@ -2,12 +2,19 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 func main() {
 	fmt.Println("Starting Synthetic Data Generation...")
 	fmt.Println("Generating League Data...")
-	leagueData := generateLeagueFlat()
+	uuidGenerator := UUIDGenerator(func() string { return uuid.New().String() })
+	clock := RealClock{}
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	leagueData := generateLeagueFlat(uuidGenerator, clock, rng)
 	fmt.Println("Creating Sample Team Roster...")
 	rosters := make(map[string]FootballTeamRoster)
 	for _, team := range leagueData.Teams {

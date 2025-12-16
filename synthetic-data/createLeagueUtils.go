@@ -2,8 +2,6 @@ package main
 
 import (
 	"math/rand"
-
-	"github.com/google/uuid"
 )
 
 // Franchise represents a team identity
@@ -54,24 +52,24 @@ var allAvailableFranchises = []Franchise{
 	{"Denver", "CO", "Summits", "DEN"},
 }
 
-func generateConference(name string) Conference {
+func generateConference(name string, uuidGenerator UUIDGenerator) Conference {
 	return Conference{
-		ID:   uuid.NewString(),
+		ID:   uuidGenerator(),
 		Name: name,
 	}
 }
 
-func generateDivision(name string, conferenceID string) Division {
+func generateDivision(name string, conferenceID string, uuidGenerator UUIDGenerator) Division {
 	return Division{
-		ID:           uuid.NewString(),
+		ID:           uuidGenerator(),
 		Name:         name,
 		ConferenceID: conferenceID,
 	}
 }
 
-func generateTeam(franchise Franchise, divisionID string) Team {
+func generateTeam(franchise Franchise, divisionID string, uuidGenerator UUIDGenerator) Team {
 	return Team{
-		ID:         uuid.NewString(),
+		ID:         uuidGenerator(),
 		Name:       franchise.Name,
 		DivisionID: divisionID,
 		City:       franchise.City,
@@ -86,14 +84,14 @@ type LeagueFlat struct {
 	Teams       []Team       `json:"teams"`
 }
 
-func generateLeagueFlat() LeagueFlat {
+func generateLeagueFlat(uuidGenerator UUIDGenerator, clock Clock, rng *rand.Rand) LeagueFlat {
 	returnValue := LeagueFlat{}
 
 	// Generate Conferences
 	confNames := []string{"Union Conference", "Alliance Conference"}
 	generatedConferences := make([]Conference, len(confNames))
 	for confIndex, confName := range confNames {
-		generatedConferences[confIndex] = generateConference(confName)
+		generatedConferences[confIndex] = generateConference(confName, uuidGenerator)
 	}
 	returnValue.Conferences = generatedConferences
 
@@ -102,7 +100,7 @@ func generateLeagueFlat() LeagueFlat {
 	generatedDivisions := make([]Division, len(divisionNames)*len(generatedConferences))
 	for confIndex, generatedConference := range generatedConferences {
 		for divIndex, divName := range divisionNames {
-			generatedDivisions[confIndex*len(divisionNames)+divIndex] = generateDivision(divName, generatedConference.ID)
+			generatedDivisions[confIndex*len(divisionNames)+divIndex] = generateDivision(divName, generatedConference.ID, uuidGenerator)
 		}
 	}
 	returnValue.Divisions = generatedDivisions
@@ -114,8 +112,8 @@ func generateLeagueFlat() LeagueFlat {
 		// each division has 4 teams
 		divisionSize := 4
 		for teamIndex := range divisionSize {
-			randomIndex := rand.Intn(len(availableFranchises))
-			generatedTeams[divisionIndex*divisionSize+teamIndex] = generateTeam(availableFranchises[randomIndex], generatedDivision.ID)
+			randomIndex := rng.Intn(len(availableFranchises))
+			generatedTeams[divisionIndex*divisionSize+teamIndex] = generateTeam(availableFranchises[randomIndex], generatedDivision.ID, uuidGenerator)
 			// remove the franchise from the list
 			availableFranchises = append(availableFranchises[:randomIndex], availableFranchises[randomIndex+1:]...)
 		}
