@@ -18,19 +18,19 @@ func main() {
 	for _, roster := range rosters {
 		fmt.Println("\nGenerating Player Yearly Stats...")
 		for _, player := range roster.QB {
-			createPlayerYear(player, 2025)
+			createPlayerCareer(player)
 		}
 		for _, player := range roster.RB {
-			createPlayerYear(player, 2025)
+			createPlayerCareer(player)
 		}
 		for _, player := range roster.WR {
-			createPlayerYear(player, 2025)
+			createPlayerCareer(player)
 		}
 		for _, player := range roster.TE {
-			createPlayerYear(player, 2025)
+			createPlayerCareer(player)
 		}
 		for _, player := range roster.PK {
-			createPlayerYear(player, 2025)
+			createPlayerCareer(player)
 		}
 	}
 	fmt.Println("\nSynthetic Data Generation Complete.")

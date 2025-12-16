@@ -1,9 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
+	"time"
 )
+
+func createPlayerCareer(player Player) []PlayerYearlyStatsFootball {
+	currentYear := time.Now().Year()
+	draftYear := player.DraftYear
+	// player is a rookie about to start their first year
+	if draftYear == currentYear {
+		rookieYear := PlayerYearlyStatsFootball{PlayerID: player.ID, Year: currentYear, Stats: FootballYearlyStats{Total: FootballStats{}}}
+		// fmt.Println(rookieYear)
+		return []PlayerYearlyStatsFootball{rookieYear}
+	}
+	careerYears := currentYear - draftYear
+	careerStats := make([]PlayerYearlyStatsFootball, careerYears)
+	for i := range careerYears {
+		careerStats[i] = createPlayerYear(player, draftYear)
+		draftYear++
+	}
+	// fmt.Println(careerStats)
+	return careerStats
+}
 
 func createPlayerYear(player Player, year int) PlayerYearlyStatsFootball {
 	playerYear := PlayerYearlyStatsFootball{
@@ -11,8 +30,6 @@ func createPlayerYear(player Player, year int) PlayerYearlyStatsFootball {
 		Year:     year,
 		Stats:    walkThroughPlayerYear(player, 18, year),
 	}
-	// pretty print the player year
-	fmt.Printf("Player Year: %+v\n", playerYear)
 	return playerYear
 }
 
@@ -84,15 +101,16 @@ func rollForInjury(playerAge int, playerPosition string) (bool, int) {
 		injuryRate = 0.12
 	}
 
-	if playerPosition == "QB" {
+	switch playerPosition {
+	case "QB":
 		injuryRate = injuryRate * 0.5
-	} else if playerPosition == "RB" {
+	case "RB":
 		injuryRate = injuryRate * 1
-	} else if playerPosition == "WR" {
+	case "WR":
 		injuryRate = injuryRate * 0.8
-	} else if playerPosition == "TE" {
+	case "TE":
 		injuryRate = injuryRate * 0.8
-	} else if playerPosition == "PK" {
+	case "PK":
 		injuryRate = injuryRate * 0.25
 	}
 
@@ -127,7 +145,6 @@ type PlayerGameStatsGenerator interface {
 	generate(player Player, yearsOfExperience int) FootballStats
 }
 
-// quarterBackGenerator is a concrete type that implements PlayerGameStatsGenerator
 type quarterBackGenerator struct{}
 
 func (q quarterBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
