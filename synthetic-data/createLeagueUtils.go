@@ -54,14 +54,14 @@ var allAvailableFranchises = []Franchise{
 	{"Denver", "CO", "Summits", "DEN"},
 }
 
-func GenerateConference(name string) Conference {
+func generateConference(name string) Conference {
 	return Conference{
 		ID:   uuid.NewString(),
 		Name: name,
 	}
 }
 
-func GenerateDivision(name string, conferenceID string) Division {
+func generateDivision(name string, conferenceID string) Division {
 	return Division{
 		ID:           uuid.NewString(),
 		Name:         name,
@@ -69,7 +69,7 @@ func GenerateDivision(name string, conferenceID string) Division {
 	}
 }
 
-func GenerateTeam(franchise Franchise, divisionID string) Team {
+func generateTeam(franchise Franchise, divisionID string) Team {
 	return Team{
 		ID:         uuid.NewString(),
 		Name:       franchise.Name,
@@ -86,14 +86,14 @@ type LeagueFlat struct {
 	Teams       []Team       `json:"teams"`
 }
 
-func GenerateLeagueFlat() LeagueFlat {
+func generateLeagueFlat() LeagueFlat {
 	returnValue := LeagueFlat{}
 
 	// Generate Conferences
 	confNames := []string{"Union Conference", "Alliance Conference"}
 	generatedConferences := make([]Conference, len(confNames))
 	for confIndex, confName := range confNames {
-		generatedConferences[confIndex] = GenerateConference(confName)
+		generatedConferences[confIndex] = generateConference(confName)
 	}
 	returnValue.Conferences = generatedConferences
 
@@ -102,7 +102,7 @@ func GenerateLeagueFlat() LeagueFlat {
 	generatedDivisions := make([]Division, len(divisionNames)*len(generatedConferences))
 	for confIndex, generatedConference := range generatedConferences {
 		for divIndex, divName := range divisionNames {
-			generatedDivisions[confIndex*len(divisionNames)+divIndex] = GenerateDivision(divName, generatedConference.ID)
+			generatedDivisions[confIndex*len(divisionNames)+divIndex] = generateDivision(divName, generatedConference.ID)
 		}
 	}
 	returnValue.Divisions = generatedDivisions
@@ -115,7 +115,7 @@ func GenerateLeagueFlat() LeagueFlat {
 		divisionSize := 4
 		for teamIndex := range divisionSize {
 			randomIndex := rand.Intn(len(availableFranchises))
-			generatedTeams[divisionIndex*divisionSize+teamIndex] = GenerateTeam(availableFranchises[randomIndex], generatedDivision.ID)
+			generatedTeams[divisionIndex*divisionSize+teamIndex] = generateTeam(availableFranchises[randomIndex], generatedDivision.ID)
 			// remove the franchise from the list
 			availableFranchises = append(availableFranchises[:randomIndex], availableFranchises[randomIndex+1:]...)
 		}

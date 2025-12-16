@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func createTeamRoster(teamID string) NFLTeamRoster {
+func createTeamRoster(teamID string) FootballTeamRoster {
 	qbCount := NFLRosterComposition["QB"]
 	rbCount := NFLRosterComposition["RB"]
 	wrCount := NFLRosterComposition["WR"]
@@ -30,7 +30,7 @@ func createTeamRoster(teamID string) NFLTeamRoster {
 		pkPlayers[pkIndex] = createNewPlayer(PK, teamID)
 	}
 
-	roster := NFLTeamRoster{
+	roster := FootballTeamRoster{
 		QB: qbPlayers,
 		RB: rbPlayers,
 		WR: wrPlayers,

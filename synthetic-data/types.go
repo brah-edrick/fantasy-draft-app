@@ -14,7 +14,7 @@ var NFLRosterComposition = RosterComposition{
 	"PK": 1,
 }
 
-type NFLTeamRoster struct {
+type FootballTeamRoster struct {
 	QB []Player
 	RB []Player
 	WR []Player
@@ -22,7 +22,7 @@ type NFLTeamRoster struct {
 	PK []Player
 }
 
-// --- Data Model Structs (for JSON Export) ---
+// --- Data Model Structs ---
 
 type League struct {
 	Conferences []Conference `json:"conferences"`
@@ -62,4 +62,46 @@ type Player struct {
 	Skill             float64 `json:"skill"` // 0.0 - 1.0
 	Status            string  `json:"status"`
 	Jersey            int     `json:"jersey"`
+}
+
+type FootballStats struct {
+	PassingAttempts       int
+	PassingCompletions    int
+	PassingInterceptions  int
+	PassingTDs            int
+	PassingYards          int
+	RushingAttempts       int
+	RushingYards          int
+	ReceivingYards        int
+	RushingTDs            int
+	ReceivingReceptions   int
+	ReceivingTDs          int
+	ReceivingTargets      int
+	Fumbles               int
+	FumblesLost           int
+	FieldGoals            int
+	FieldGoalsMade        int
+	FieldGoalsMissed      int
+	FieldGoalsBlocked     int
+	FieldGoalsBlockedMade int
+	ExtraPoints           int
+	ExtraPointsMade       int
+	ExtraPointsMissed     int
+}
+
+type FootballYearlyStats struct {
+	Total FootballStats
+}
+
+type PlayerYearlyStats[T struct{}] struct {
+	ID       string `json:"id"`
+	PlayerID string `json:"player_id"`
+	Year     int    `json:"year"`
+	Stats    T      `json:"stats"`
+}
+
+type PlayerYearlyStatsFootball struct {
+	PlayerID string              `json:"player_id"`
+	Year     int                 `json:"year"`
+	Stats    FootballYearlyStats `json:"stats"`
 }
