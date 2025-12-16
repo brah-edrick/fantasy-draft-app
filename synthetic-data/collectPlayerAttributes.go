@@ -79,7 +79,7 @@ func NewPositionProfile() *PositionProfile {
 	}
 }
 
-func importRealData() map[string]interface{} {
+func importRealData() map[string]any {
 	file, err := os.Open("synthetic-data/real-data.json") // you'll need to provide this file in the format specified
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
@@ -95,16 +95,16 @@ func importRealData() map[string]interface{} {
 	return data
 }
 
-func collectPlayerAttributes(data map[string]interface{}) []PlayerStat {
+func collectPlayerAttributes(data map[string]any) []PlayerStat {
 
-	athletes, ok := data["athletes"].([]interface{})
+	athletes, ok := data["athletes"].([]any)
 	if !ok {
 		log.Fatalf("Error: 'athletes' field is not a list")
 	}
 
 	stats := make([]PlayerStat, 0)
 	for _, p := range athletes {
-		player, ok := p.(map[string]interface{})
+		player, ok := p.(map[string]any)
 		if !ok {
 			continue
 		}
@@ -162,6 +162,8 @@ type AggregatedPlayerStats struct {
 	FirstNames      NameFrequency               `json:"first_names"`
 	LastNames       NameFrequency               `json:"last_names"`
 }
+
+type StatsAggregator func() AggregatedPlayerStats
 
 func collectAndAggregatePlayerAttributes() AggregatedPlayerStats {
 	data := importRealData()

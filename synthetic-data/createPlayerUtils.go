@@ -7,20 +7,16 @@ import (
 	"math/rand"
 	"slices"
 	"sync"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 // Distribution maps a value (T) to its frequency count.
 // T must be 'ordered' (int, string, float64) to be sorted for CDF.
 type Distribution[T cmp.Ordered] map[T]int
 
-func createNewPlayer(position Position, teamId string) Player {
-	firstNameGenerator, lastNameGenerator, positionGenerators := getPlayerGenerators()
-
-	firstName := firstNameGenerator()
-	lastName := lastNameGenerator()
+func createNewPlayer(position Position, teamId string, generators PlayerGenerators, clock Clock, uuidGenerator UUIDGenerator) Player {
+	firstName := generators.FirstNameGenerator()
+	lastName := generators.LastNameGenerator()
+	positionGenerators := generators.PositionGenerators
 	positionIndex := slices.IndexFunc(positionGenerators, func(p LabeledPositionGenerators) bool {
 		return p.PositionCode == position
 	})
@@ -32,10 +28,10 @@ func createNewPlayer(position Position, teamId string) Player {
 	weight := positionGenerators[positionIndex].Generators.WeightGenerator()
 	age := positionGenerators[positionIndex].Generators.AgeGenerator()
 	yoe := positionGenerators[positionIndex].Generators.YoeGenerator()
-	thisYear := time.Now().Year()
+	thisYear := clock.Now().Year()
 
 	player := Player{
-		ID:                uuid.New().String(),
+		ID:                uuidGenerator(),
 		DraftYear:         thisYear - yoe,
 		FirstName:         firstName,
 		LastName:          lastName,
@@ -46,7 +42,7 @@ func createNewPlayer(position Position, teamId string) Player {
 		Age:               age,
 		YearsOfExperience: yoe,
 		Status:            "Active",
-		Skill:             createRandomSkillFactorWithBellCurve(),
+		Skill:             generators.SkillGenerator(),
 		TeamID:            teamId,
 	}
 
@@ -62,6 +58,15 @@ const (
 	TE Position = "TE"
 	PK Position = "PK"
 )
+
+type PlayerGenerators struct {
+	FirstNameGenerator func() string
+	LastNameGenerator  func() string
+	PositionGenerators []LabeledPositionGenerators
+	SkillGenerator     func() float64
+}
+
+type UUIDGenerator func() string
 
 type PositionGenerators struct {
 	JerseyGenerator func() int
@@ -83,28 +88,33 @@ var (
 	generatorsOnce              sync.Once
 )
 
-func getPlayerGenerators() (func() string, func() string, []LabeledPositionGenerators) {
+func getPlayerGenerators(statsAggregator StatsAggregator, rand *rand.Rand) PlayerGenerators {
 	generatorsOnce.Do(func() {
-		firstNameGeneratorSingleton, lastNameGeneratorSingleton, positionGeneratorsSingleton = createPlayerGeneratorsFromStats()
+		firstNameGeneratorSingleton, lastNameGeneratorSingleton, positionGeneratorsSingleton = createPlayerGeneratorsFromStats(statsAggregator, rand)
 	})
-	return firstNameGeneratorSingleton, lastNameGeneratorSingleton, positionGeneratorsSingleton
+	return PlayerGenerators{
+		FirstNameGenerator: firstNameGeneratorSingleton,
+		LastNameGenerator:  lastNameGeneratorSingleton,
+		PositionGenerators: positionGeneratorsSingleton,
+		SkillGenerator:     createRandomSkillFactorWithBellCurve,
+	}
 }
 
-func createPlayerGeneratorsFromStats() (func() string, func() string, []LabeledPositionGenerators) {
+func createPlayerGeneratorsFromStats(statsAggregator StatsAggregator, rand *rand.Rand) (func() string, func() string, []LabeledPositionGenerators) {
 	fmt.Println("Creating player generators from real player stats...")
 	fmt.Println("Aggregating player stats...")
-	stats := collectAndAggregatePlayerAttributes()
+	stats := statsAggregator()
 	fmt.Println("Creating first name generator...")
-	firstNameGenerator := createGenerateValueFromStat(stats.FirstNames)
+	firstNameGenerator := createGenerateValueFromStat(stats.FirstNames, rand)
 	fmt.Println("Creating last name generator...")
-	lastNameGenerator := createGenerateValueFromStat(stats.LastNames)
+	lastNameGenerator := createGenerateValueFromStat(stats.LastNames, rand)
 	fmt.Println("Creating position generators...")
-	positionGenerators := createPositionsGeneratorsFromStats(stats)
+	positionGenerators := createPositionsGeneratorsFromStats(stats, rand)
 	fmt.Println("Player generators created successfully.")
 	return firstNameGenerator, lastNameGenerator, positionGenerators
 }
 
-func createPositionsGeneratorsFromStats(stats AggregatedPlayerStats) []LabeledPositionGenerators {
+func createPositionsGeneratorsFromStats(stats AggregatedPlayerStats, rand *rand.Rand) []LabeledPositionGenerators {
 	positionCodes := make([]Position, 0, 5)
 	positionCodes = append(positionCodes, QB, RB, WR, TE, PK)
 	positionGenerators := make([]LabeledPositionGenerators, 0, 5)
@@ -115,20 +125,20 @@ func createPositionsGeneratorsFromStats(stats AggregatedPlayerStats) []LabeledPo
 		}
 		positionGenerators = append(positionGenerators, LabeledPositionGenerators{
 			PositionCode: positionCode,
-			Generators:   CreatePositionAttributeGenerators(positionMap),
+			Generators:   CreatePositionAttributeGenerators(positionMap, rand),
 		})
 	}
 	return positionGenerators
 }
 
 // CreatePositionAttributeGenerators creates generators for all standard position attributes
-func CreatePositionAttributeGenerators(profile *PositionProfile) PositionGenerators {
+func CreatePositionAttributeGenerators(profile *PositionProfile, rand *rand.Rand) PositionGenerators {
 	return PositionGenerators{
-		JerseyGenerator: createGenerateValueFromStat(profile.Jerseys),
-		HeightGenerator: createGenerateValueFromStat(profile.Heights),
-		WeightGenerator: createGenerateValueFromStat(profile.Weights),
-		AgeGenerator:    createGenerateValueFromStat(profile.Ages),
-		YoeGenerator:    createGenerateValueFromStat(profile.YearsOfExperience),
+		JerseyGenerator: createGenerateValueFromStat(profile.Jerseys, rand),
+		HeightGenerator: createGenerateValueFromStat(profile.Heights, rand),
+		WeightGenerator: createGenerateValueFromStat(profile.Weights, rand),
+		AgeGenerator:    createGenerateValueFromStat(profile.Ages, rand),
+		YoeGenerator:    createGenerateValueFromStat(profile.YearsOfExperience, rand),
 	}
 }
 
@@ -140,7 +150,7 @@ type StatisticToCDF[T cmp.Ordered] struct {
 // createCdfForStat calculates the Cumulative Distribution Function for a given statistic distribution.
 // It returns a struct containing sorted Values and their corresponding CDF probabilities.
 // This generic function accepts any map with comparable/ordered keys (int, string, etc.) and int values (counts).
-func createCDFForStat[T cmp.Ordered, M ~map[T]int](stats M) *StatisticToCDF[T] {
+func createCDFForStat[T cmp.Ordered, M ~map[T]int](stats M, rand *rand.Rand) *StatisticToCDF[T] {
 	// Convert to array
 	keys := make([]T, 0, len(stats))
 	total := 0
@@ -167,7 +177,7 @@ func createCDFForStat[T cmp.Ordered, M ~map[T]int](stats M) *StatisticToCDF[T] {
 	}
 }
 
-func generateValueFromCDF[T cmp.Ordered](cdf *StatisticToCDF[T]) T {
+func generateValueFromCDF[T cmp.Ordered](cdf *StatisticToCDF[T], rand *rand.Rand) T {
 	randomNumber := rand.Float64()
 	index := binarySearchUpperBound(cdf, 0, len(cdf.Values)-1, randomNumber)
 	return cdf.Values[index]
@@ -188,10 +198,10 @@ func binarySearchUpperBound[T cmp.Ordered](cdf *StatisticToCDF[T], left, right i
 	}
 }
 
-func createGenerateValueFromStat[T cmp.Ordered, M ~map[T]int](stats M) func() T {
-	cdf := createCDFForStat(stats)
+func createGenerateValueFromStat[T cmp.Ordered, M ~map[T]int](stats M, rand *rand.Rand) func() T {
+	cdf := createCDFForStat(stats, rand)
 	return func() T {
-		return generateValueFromCDF(cdf)
+		return generateValueFromCDF(cdf, rand)
 	}
 }
 

@@ -1,6 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/google/uuid"
+)
 
 func createTeamRoster(teamID string) FootballTeamRoster {
 	qbCount := NFLRosterComposition["QB"]
@@ -30,8 +36,12 @@ func createTeamRoster(teamID string) FootballTeamRoster {
 
 func createPlayersWithDepthSkills(position Position, teamID string, count int) []Player {
 	players := make([]Player, count)
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	generators := getPlayerGenerators(collectAndAggregatePlayerAttributes, rng)
+	clock := RealClock{}
+	uuidGenerator := UUIDGenerator(func() string { return uuid.New().String() })
 	for depthIndex := range count {
-		player := createNewPlayer(position, teamID)
+		player := createNewPlayer(position, teamID, generators, clock, uuidGenerator)
 		// Override the random skill with depth-based skill
 		player.Skill = createSkillForDepthPosition(depthIndex, count)
 		players[depthIndex] = player
