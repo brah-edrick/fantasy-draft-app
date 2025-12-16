@@ -202,3 +202,26 @@ func createRandomSkillFactorWithBellCurve() float64 {
 	desiredStdDev := 0.2
 	return rand.NormFloat64()*desiredStdDev + desiredMean
 }
+
+// createSkillForDepthPosition generates a skill value based on depth chart position.
+// depthPosition is 0-indexed (0 = starter, 1 = backup, etc.)
+// This creates a natural falloff down the depth chart while allowing some variance.
+func createSkillForDepthPosition(depthPosition int, totalAtPosition int) float64 {
+	// Calculate a base skill that decreases with depth
+	depthRatio := float64(depthPosition) / float64(max(totalAtPosition-1, 1))
+
+	baseMean := 0.80 - (depthRatio * 0.45)
+
+	variance := 0.08
+
+	skill := rand.NormFloat64()*variance + baseMean
+
+	if skill < 0.15 {
+		skill = 0.15
+	}
+	if skill > 0.95 {
+		skill = 0.95
+	}
+
+	return skill
+}

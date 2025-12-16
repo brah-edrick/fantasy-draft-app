@@ -9,26 +9,12 @@ func createTeamRoster(teamID string) FootballTeamRoster {
 	teCount := NFLRosterComposition["TE"]
 	pkCount := NFLRosterComposition["PK"]
 
-	qbPlayers := make([]Player, qbCount)
-	for qbIndex := range qbCount {
-		qbPlayers[qbIndex] = createNewPlayer(QB, teamID)
-	}
-	rbPlayers := make([]Player, rbCount)
-	for rbIndex := range rbCount {
-		rbPlayers[rbIndex] = createNewPlayer(RB, teamID)
-	}
-	wrPlayers := make([]Player, wrCount)
-	for wrIndex := range wrCount {
-		wrPlayers[wrIndex] = createNewPlayer(WR, teamID)
-	}
-	tePlayers := make([]Player, teCount)
-	for teIndex := range teCount {
-		tePlayers[teIndex] = createNewPlayer(TE, teamID)
-	}
-	pkPlayers := make([]Player, pkCount)
-	for pkIndex := range pkCount {
-		pkPlayers[pkIndex] = createNewPlayer(PK, teamID)
-	}
+	// Create players with depth-based skill assignments
+	qbPlayers := createPlayersWithDepthSkills(QB, teamID, qbCount)
+	rbPlayers := createPlayersWithDepthSkills(RB, teamID, rbCount)
+	wrPlayers := createPlayersWithDepthSkills(WR, teamID, wrCount)
+	tePlayers := createPlayersWithDepthSkills(TE, teamID, teCount)
+	pkPlayers := createPlayersWithDepthSkills(PK, teamID, pkCount)
 
 	roster := FootballTeamRoster{
 		QB: qbPlayers,
@@ -40,4 +26,15 @@ func createTeamRoster(teamID string) FootballTeamRoster {
 
 	fmt.Printf("Roster created: %+v\n", roster)
 	return roster
+}
+
+func createPlayersWithDepthSkills(position Position, teamID string, count int) []Player {
+	players := make([]Player, count)
+	for depthIndex := range count {
+		player := createNewPlayer(position, teamID)
+		// Override the random skill with depth-based skill
+		player.Skill = createSkillForDepthPosition(depthIndex, count)
+		players[depthIndex] = player
+	}
+	return players
 }

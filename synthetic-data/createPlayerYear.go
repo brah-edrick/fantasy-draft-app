@@ -175,15 +175,15 @@ func QuarterBackGameStatsGenerator() PlayerGameStatsGenerator {
 type runningBackGenerator struct{}
 
 func (r runningBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	rushingAttempts := normalIntInRange(14, 29)
-	rushingAverage := normalIntInRange(5, 7)
+	rushingAttempts := normalIntInRange(12, 25)
+	rushingAverage := normalIntInRange(4, 6)
 	rushingYards := rushingAttempts * rushingAverage
 	rushingTDs := normalIntInRange(0, 2)
 	fumbles := normalIntInRange(0, 1)
 	fumblesLost := normalIntInRange(0, fumbles)
-	receivingReceptions := normalIntInRange(2, 7)
-	receivingTargets := normalIntInRange(4, 9)
-	receivingAverage := normalIntInRange(7, 14)
+	receivingReceptions := normalIntInRange(2, 6)
+	receivingTargets := normalIntInRange(3, 8)
+	receivingAverage := normalIntInRange(6, 12)
 	receivingYards := receivingReceptions * receivingAverage
 	receivingTDs := normalIntInRange(0, 1)
 
@@ -220,12 +220,12 @@ func RunningBackGameStatsGenerator() PlayerGameStatsGenerator {
 type wideReceiverGenerator struct{}
 
 func (w wideReceiverGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	receivingReceptions := normalIntInRange(5, 12)
-	receivingTargets := normalIntInRange(7, 16)
-	receivingAverage := normalIntInRange(14, 21)
+	receivingReceptions := normalIntInRange(4, 10)
+	receivingTargets := normalIntInRange(6, 14)
+	receivingAverage := normalIntInRange(12, 18)
 	receivingYards := receivingReceptions * receivingAverage
-	rushingAttempts := normalIntInRange(1, 3)
-	rushingAverage := normalIntInRange(6, 17)
+	rushingAttempts := normalIntInRange(0, 2)
+	rushingAverage := normalIntInRange(5, 14)
 	rushingYards := rushingAttempts * rushingAverage
 	rushingTDs := normalIntInRange(0, 1)
 	receivingTDs := normalIntInRange(0, 2)
@@ -265,12 +265,12 @@ func WideReceiverGameStatsGenerator() PlayerGameStatsGenerator {
 type tightEndGenerator struct{}
 
 func (te tightEndGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	receivingReceptions := normalIntInRange(4, 9)
-	receivingTargets := normalIntInRange(6, 13)
-	receivingAverage := normalIntInRange(12, 17)
+	receivingReceptions := normalIntInRange(3, 8)
+	receivingTargets := normalIntInRange(5, 11)
+	receivingAverage := normalIntInRange(10, 14)
 	receivingYards := receivingReceptions * receivingAverage
 	rushingAttempts := normalIntInRange(0, 1)
-	rushingAverage := normalIntInRange(5, 12)
+	rushingAverage := normalIntInRange(4, 10)
 	rushingYards := rushingAttempts * rushingAverage
 	rushingTDs := normalIntInRange(0, 1)
 	receivingTDs := normalIntInRange(0, 1)
