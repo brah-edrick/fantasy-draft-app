@@ -131,17 +131,17 @@ type PlayerGameStatsGenerator interface {
 type quarterBackGenerator struct{}
 
 func (q quarterBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	passingTouchdowns := normalIntInRange(0, 6)
-	passingInterceptions := normalIntInRange(0, 3)
-	passingAttempts := normalIntInRange(15, 60)
-	passingCompletions := normalIntInRange(10, 50)
-	passingAverage := normalIntInRange(-1, 30)
+	passingTouchdowns := normalIntInRange(0, 4)
+	passingInterceptions := normalIntInRange(0, 2)
+	passingAttempts := normalIntInRange(25, 45)
+	passingCompletions := normalIntInRange(15, 32)
+	passingAverage := normalIntInRange(8, 14)
 	passingYards := passingCompletions * passingAverage
-	rushingAttempts := normalIntInRange(0, 20)
-	rushingYards := normalIntInRange(0, 100)
-	rushingTDs := normalIntInRange(0, 2)
-	fumbles := normalIntInRange(0, 2)
-	fumblesLost := normalIntInRange(0, 2)
+	rushingAttempts := normalIntInRange(1, 6)
+	rushingYards := normalIntInRange(5, 35)
+	rushingTDs := normalIntInRange(0, 1)
+	fumbles := normalIntInRange(0, 1)
+	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
 		PassingAttempts:       passingAttempts,
@@ -175,17 +175,17 @@ func QuarterBackGameStatsGenerator() PlayerGameStatsGenerator {
 type runningBackGenerator struct{}
 
 func (r runningBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	rushingAttempts := normalIntInRange(0, 50)
-	rushingAverage := normalIntInRange(-1, 25)
+	rushingAttempts := normalIntInRange(14, 29)
+	rushingAverage := normalIntInRange(5, 7)
 	rushingYards := rushingAttempts * rushingAverage
-	rushingTDs := normalIntInRange(0, 6)
-	fumbles := normalIntInRange(0, 2)
-	fumblesLost := normalIntInRange(0, 2)
-	receivingReceptions := normalIntInRange(0, 20)
-	receivingTargets := normalIntInRange(0, 20)
-	receivingAverage := normalIntInRange(-1, 15)
+	rushingTDs := normalIntInRange(0, 2)
+	fumbles := normalIntInRange(0, 1)
+	fumblesLost := normalIntInRange(0, fumbles)
+	receivingReceptions := normalIntInRange(2, 7)
+	receivingTargets := normalIntInRange(4, 9)
+	receivingAverage := normalIntInRange(7, 14)
 	receivingYards := receivingReceptions * receivingAverage
-	receivingTDs := normalIntInRange(0, 6)
+	receivingTDs := normalIntInRange(0, 1)
 
 	return FootballStats{
 		PassingAttempts:       0,
@@ -220,17 +220,17 @@ func RunningBackGameStatsGenerator() PlayerGameStatsGenerator {
 type wideReceiverGenerator struct{}
 
 func (w wideReceiverGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	receivingReceptions := normalIntInRange(0, 40)
-	receivingTargets := normalIntInRange(0, 50)
-	receivingAverage := normalIntInRange(-1, 25)
+	receivingReceptions := normalIntInRange(5, 12)
+	receivingTargets := normalIntInRange(7, 16)
+	receivingAverage := normalIntInRange(14, 21)
 	receivingYards := receivingReceptions * receivingAverage
-	rushingAttempts := normalIntInRange(0, 4)
-	rushingAverage := normalIntInRange(-1, 15)
+	rushingAttempts := normalIntInRange(1, 3)
+	rushingAverage := normalIntInRange(6, 17)
 	rushingYards := rushingAttempts * rushingAverage
 	rushingTDs := normalIntInRange(0, 1)
-	receivingTDs := normalIntInRange(0, 6)
-	fumbles := normalIntInRange(0, 2)
-	fumblesLost := normalIntInRange(0, 2)
+	receivingTDs := normalIntInRange(0, 2)
+	fumbles := normalIntInRange(0, 1)
+	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
 		PassingAttempts:       0,
@@ -265,17 +265,17 @@ func WideReceiverGameStatsGenerator() PlayerGameStatsGenerator {
 type tightEndGenerator struct{}
 
 func (te tightEndGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	receivingReceptions := normalIntInRange(0, 30)
-	receivingTargets := normalIntInRange(0, 30)
-	receivingAverage := normalIntInRange(-1, 20)
+	receivingReceptions := normalIntInRange(4, 9)
+	receivingTargets := normalIntInRange(6, 13)
+	receivingAverage := normalIntInRange(12, 17)
 	receivingYards := receivingReceptions * receivingAverage
-	rushingAttempts := normalIntInRange(0, 2)
-	rushingAverage := normalIntInRange(-1, 15)
+	rushingAttempts := normalIntInRange(0, 1)
+	rushingAverage := normalIntInRange(5, 12)
 	rushingYards := rushingAttempts * rushingAverage
 	rushingTDs := normalIntInRange(0, 1)
-	receivingTDs := normalIntInRange(0, 6)
-	fumbles := normalIntInRange(0, 2)
-	fumblesLost := normalIntInRange(0, 2)
+	receivingTDs := normalIntInRange(0, 1)
+	fumbles := normalIntInRange(0, 1)
+	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
 		PassingAttempts:       0,
