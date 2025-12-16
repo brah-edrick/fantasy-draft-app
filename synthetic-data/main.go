@@ -16,7 +16,6 @@ func main() {
 	}
 
 	for _, roster := range rosters {
-		fmt.Println("\nGenerating Player Yearly Stats...")
 		for _, player := range roster.QB {
 			createPlayerCareer(player)
 		}

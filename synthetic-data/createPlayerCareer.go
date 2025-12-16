@@ -1,60 +1,125 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
 
-func createPlayerCareer(player Player) []PlayerYearlyStatsFootball {
-	currentYear := time.Now().Year()
+// =============================================================================
+// DEPENDENCY INJECTION TYPES
+// =============================================================================
+
+// Clock interface for injecting time - makes testing time-dependent code easy
+type Clock interface {
+	Now() time.Time
+}
+
+// RealClock implements Clock using actual system time
+type RealClock struct{}
+
+func (RealClock) Now() time.Time { return time.Now() }
+
+// YearSimulatorConfig holds all injectable dependencies for simulating player years
+// Any nil fields will use production defaults when passed to NewCareerSimulator
+type YearSimulatorConfig struct {
+	// Clock for getting current time (default: RealClock)
+	Clock Clock
+
+	// GamesPerSeason is number of games in a season (default: 18)
+	GamesPerSeason int
+
+	// InjuryRoller determines if a player gets injured (default: rollForInjury)
+	InjuryRoller func(age int, position string) (injured bool, gamesOut int)
+
+	// StatsGenerator creates stats for a single game (default: generatePlayerGameStats)
+	StatsGenerator func(player Player, yearsOfExperience int) FootballStats
+
+	// StatMultiplier adjusts stats based on player skill (default: multiplyYearlyStatsByPlayerSkill)
+	StatMultiplier func(player Player, yearsOfExperience int, stats FootballStats) FootballStats
+}
+
+// CareerSimulator handles all year/career simulation with injectable dependencies
+type CareerSimulator struct {
+	clock          Clock
+	gamesPerSeason int
+	injuryRoller   func(int, string) (bool, int)
+	statsGenerator func(Player, int) FootballStats
+	statMultiplier func(Player, int, FootballStats) FootballStats
+}
+
+// NewCareerSimulator creates a CareerSimulator with the given config
+// Any zero/nil values in config will use production defaults
+func NewCareerSimulator(cfg YearSimulatorConfig) *CareerSimulator {
+	sim := &CareerSimulator{
+		clock:          cfg.Clock,
+		gamesPerSeason: cfg.GamesPerSeason,
+		injuryRoller:   cfg.InjuryRoller,
+		statsGenerator: cfg.StatsGenerator,
+		statMultiplier: cfg.StatMultiplier,
+	}
+
+	// Apply defaults for any unset dependencies
+	if sim.clock == nil {
+		sim.clock = RealClock{}
+	}
+	if sim.gamesPerSeason == 0 {
+		sim.gamesPerSeason = 18
+	}
+	if sim.injuryRoller == nil {
+		sim.injuryRoller = rollForInjury
+	}
+	if sim.statsGenerator == nil {
+		sim.statsGenerator = generatePlayerGameStats
+	}
+	if sim.statMultiplier == nil {
+		sim.statMultiplier = multiplyYearlyStatsByPlayerSkill
+	}
+
+	return sim
+}
+
+// CreateCareer generates stats for a player's entire career up to current year
+func (sim *CareerSimulator) CreateCareer(player Player) []PlayerYearlyStatsFootball {
+	currentYear := sim.clock.Now().Year()
 	draftYear := player.DraftYear
-	// player is a rookie about to start their first year
+
+	// Player is a rookie about to start their first year
 	if draftYear == currentYear {
-		rookieYear := PlayerYearlyStatsFootball{PlayerID: player.ID, Year: currentYear, Stats: FootballYearlyStats{Total: FootballStats{}}}
-		// fmt.Println(rookieYear)
+		rookieYear := PlayerYearlyStatsFootball{
+			PlayerID: player.ID,
+			Year:     currentYear,
+			Stats:    FootballYearlyStats{Total: FootballStats{}},
+		}
 		return []PlayerYearlyStatsFootball{rookieYear}
 	}
+
 	careerYears := currentYear - draftYear
 	careerStats := make([]PlayerYearlyStatsFootball, careerYears)
 	for i := range careerYears {
-		careerStats[i] = createPlayerYear(player, draftYear)
+		careerStats[i] = sim.CreateYear(player, draftYear)
 		draftYear++
 	}
-	// fmt.Println(careerStats)
 	return careerStats
 }
 
-func createPlayerYear(player Player, year int) PlayerYearlyStatsFootball {
-	playerYear := PlayerYearlyStatsFootball{
+// CreateYear generates stats for a single season
+func (sim *CareerSimulator) CreateYear(player Player, year int) PlayerYearlyStatsFootball {
+	return PlayerYearlyStatsFootball{
 		PlayerID: player.ID,
 		Year:     year,
-		Stats:    walkThroughPlayerYear(player, 18, year),
+		Stats:    sim.SimulateYear(player, year),
 	}
-	return playerYear
 }
 
-func walkThroughPlayerYear(player Player, gamesInYear int, year int) FootballYearlyStats {
+// SimulateYear walks through each game in a season, handling injuries and accumulating stats
+func (sim *CareerSimulator) SimulateYear(player Player, year int) FootballYearlyStats {
 	playerYearsOfExperience := player.DraftYear - year
-	_ = FootballYearlyStats{Total: FootballStats{}} // placeholder
 	isInjured := false
 	injuryGameCount := 0
-	yearlyStats := FootballStats{
-		PassingAttempts:      0,
-		PassingCompletions:   0,
-		PassingInterceptions: 0,
-		PassingTDs:           0,
-		PassingYards:         0,
-		RushingAttempts:      0,
-		RushingYards:         0,
-		ReceivingYards:       0,
-		RushingTDs:           0,
-		ReceivingReceptions:  0,
-		ReceivingTDs:         0,
-		ReceivingTargets:     0,
-		Fumbles:              0,
-		FumblesLost:          0,
-	}
-	for range gamesInYear {
+	yearlyStats := FootballStats{}
+
+	for range sim.gamesPerSeason {
 		if isInjured {
 			injuryGameCount--
 			if injuryGameCount <= 0 {
@@ -62,15 +127,17 @@ func walkThroughPlayerYear(player Player, gamesInYear int, year int) FootballYea
 			}
 			continue
 		}
-		wasInjured, injuryGamesAffected := rollForInjury(player.Age, player.Position)
 
+		wasInjured, injuryGamesAffected := sim.injuryRoller(player.Age, player.Position)
 		if wasInjured {
 			isInjured = true
 			injuryGameCount = injuryGamesAffected
 		}
 
-		gameStats := multiplyYearlyStatsByPlayerSkill(player, playerYearsOfExperience, generatePlayerGameStats(player, playerYearsOfExperience))
+		gameStats := sim.statsGenerator(player, playerYearsOfExperience)
+		gameStats = sim.statMultiplier(player, playerYearsOfExperience, gameStats)
 
+		// Accumulate stats
 		yearlyStats.PassingAttempts += gameStats.PassingAttempts
 		yearlyStats.PassingCompletions += gameStats.PassingCompletions
 		yearlyStats.PassingInterceptions += gameStats.PassingInterceptions
@@ -86,7 +153,17 @@ func walkThroughPlayerYear(player Player, gamesInYear int, year int) FootballYea
 		yearlyStats.Fumbles += gameStats.Fumbles
 		yearlyStats.FumblesLost += gameStats.FumblesLost
 	}
+
 	return FootballYearlyStats{Total: yearlyStats}
+}
+
+// createPlayerCareer generates a player's full career using default settings
+func createPlayerCareer(player Player) []PlayerYearlyStatsFootball {
+	sim := NewCareerSimulator(YearSimulatorConfig{})
+	fmt.Println("Generating Career Stats for", player.FirstName, player.LastName)
+	simulatedCareer := sim.CreateCareer(player)
+	fmt.Printf("Stats: %+v\n", simulatedCareer)
+	return simulatedCareer
 }
 
 func rollForInjury(playerAge int, playerPosition string) (bool, int) {
