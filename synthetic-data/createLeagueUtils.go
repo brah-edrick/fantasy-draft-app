@@ -106,7 +106,10 @@ func generateLeagueFlat(uuidGenerator UUIDGenerator, clock Clock, rng *rand.Rand
 	returnValue.Divisions = generatedDivisions
 
 	// Generate Teams
-	availableFranchises := allAvailableFranchises
+	// Create a copy of allAvailableFranchises to avoid mutating the global slice
+	availableFranchises := make([]Franchise, len(allAvailableFranchises))
+	copy(availableFranchises, allAvailableFranchises)
+	
 	generatedTeams := make([]Team, len(availableFranchises))
 	for divisionIndex, generatedDivision := range generatedDivisions {
 		// each division has 4 teams
