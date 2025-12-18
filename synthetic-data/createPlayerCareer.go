@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -9,6 +10,9 @@ import (
 // =============================================================================
 // DEPENDENCY INJECTION TYPES
 // =============================================================================
+
+const FUMBLES_LOST_MULTIPLIER = 0.25
+const TD_MULTIPLIER = 0.66
 
 // Clock interface for injecting time - makes testing time-dependent code easy
 type Clock interface {
@@ -160,7 +164,7 @@ func (sim *CareerSimulator) SimulateYear(player Player, year int) FootballYearly
 // createPlayerCareer generates a player's full career using default settings
 func createPlayerCareer(player Player) []PlayerYearlyStatsFootball {
 	sim := NewCareerSimulator(YearSimulatorConfig{})
-	fmt.Println("Generating Career Stats for", player.FirstName, player.LastName)
+	fmt.Println("Generating Career Stats for", player.FirstName, player.LastName, player.Position)
 	simulatedCareer := sim.CreateCareer(player)
 	fmt.Printf("Stats: %+v\n", simulatedCareer)
 	return simulatedCareer
@@ -225,16 +229,16 @@ type PlayerGameStatsGenerator interface {
 type quarterBackGenerator struct{}
 
 func (q quarterBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
-	passingTouchdowns := normalIntInRange(0, 4)
+	passingTouchdowns := normalIntInRangeWithMeanBias(0, 4, TD_MULTIPLIER)
 	passingInterceptions := normalIntInRange(0, 2)
 	passingAttempts := normalIntInRange(25, 45)
 	passingCompletions := normalIntInRange(15, 32)
 	passingAverage := normalIntInRange(8, 14)
-	passingYards := passingCompletions * passingAverage
+	passingYards := nornmalizeYardsPerPlay(passingCompletions*passingAverage, passingCompletions, 99)
 	rushingAttempts := normalIntInRange(1, 6)
-	rushingYards := normalIntInRange(5, 35)
-	rushingTDs := normalIntInRange(0, 1)
-	fumbles := normalIntInRange(0, 1)
+	rushingYards := nornmalizeYardsPerPlay(normalIntInRange(5, 35), rushingAttempts, 99)
+	rushingTDs := normalIntInRangeWithMeanBias(0, 1, TD_MULTIPLIER)
+	fumbles := normalIntInRangeWithMeanBias(0, 2, FUMBLES_LOST_MULTIPLIER)
 	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
@@ -271,15 +275,15 @@ type runningBackGenerator struct{}
 func (r runningBackGenerator) generate(player Player, yearsOfExperience int) FootballStats {
 	rushingAttempts := normalIntInRange(12, 25)
 	rushingAverage := normalIntInRange(4, 6)
-	rushingYards := rushingAttempts * rushingAverage
-	rushingTDs := normalIntInRange(0, 2)
-	fumbles := normalIntInRange(0, 1)
+	rushingYards := nornmalizeYardsPerPlay(rushingAttempts*rushingAverage, rushingAttempts, 99)
+	rushingTDs := normalIntInRangeWithMeanBias(0, 2, TD_MULTIPLIER)
+	fumbles := normalIntInRangeWithMeanBias(0, 1, FUMBLES_LOST_MULTIPLIER)
 	fumblesLost := normalIntInRange(0, fumbles)
 	receivingReceptions := normalIntInRange(2, 6)
 	receivingTargets := normalIntInRange(3, 8)
 	receivingAverage := normalIntInRange(6, 12)
-	receivingYards := receivingReceptions * receivingAverage
-	receivingTDs := normalIntInRange(0, 1)
+	receivingYards := nornmalizeYardsPerPlay(receivingReceptions*receivingAverage, receivingReceptions, 99)
+	receivingTDs := normalIntInRangeWithMeanBias(0, 1, TD_MULTIPLIER)
 
 	return FootballStats{
 		PassingAttempts:       0,
@@ -317,13 +321,13 @@ func (w wideReceiverGenerator) generate(player Player, yearsOfExperience int) Fo
 	receivingReceptions := normalIntInRange(4, 10)
 	receivingTargets := normalIntInRange(6, 14)
 	receivingAverage := normalIntInRange(12, 18)
-	receivingYards := receivingReceptions * receivingAverage
+	receivingYards := nornmalizeYardsPerPlay(receivingReceptions*receivingAverage, receivingReceptions, 99)
 	rushingAttempts := normalIntInRange(0, 2)
 	rushingAverage := normalIntInRange(5, 14)
-	rushingYards := rushingAttempts * rushingAverage
-	rushingTDs := normalIntInRange(0, 1)
-	receivingTDs := normalIntInRange(0, 2)
-	fumbles := normalIntInRange(0, 1)
+	rushingYards := nornmalizeYardsPerPlay(rushingAttempts*rushingAverage, rushingAttempts, 99)
+	rushingTDs := normalIntInRangeWithMeanBias(0, 1, TD_MULTIPLIER)
+	receivingTDs := normalIntInRangeWithMeanBias(0, 2, TD_MULTIPLIER)
+	fumbles := normalIntInRangeWithMeanBias(0, 1, FUMBLES_LOST_MULTIPLIER)
 	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
@@ -362,13 +366,13 @@ func (te tightEndGenerator) generate(player Player, yearsOfExperience int) Footb
 	receivingReceptions := normalIntInRange(3, 8)
 	receivingTargets := normalIntInRange(5, 11)
 	receivingAverage := normalIntInRange(10, 14)
-	receivingYards := receivingReceptions * receivingAverage
+	receivingYards := nornmalizeYardsPerPlay(receivingReceptions*receivingAverage, receivingReceptions, 99)
 	rushingAttempts := normalIntInRange(0, 1)
 	rushingAverage := normalIntInRange(4, 10)
-	rushingYards := rushingAttempts * rushingAverage
-	rushingTDs := normalIntInRange(0, 1)
-	receivingTDs := normalIntInRange(0, 1)
-	fumbles := normalIntInRange(0, 1)
+	rushingYards := nornmalizeYardsPerPlay(rushingAttempts*rushingAverage, rushingAttempts, 99)
+	rushingTDs := normalIntInRangeWithMeanBias(0, 1, TD_MULTIPLIER)
+	receivingTDs := normalIntInRangeWithMeanBias(0, 1, TD_MULTIPLIER)
+	fumbles := normalIntInRangeWithMeanBias(0, 1, FUMBLES_LOST_MULTIPLIER)
 	fumblesLost := normalIntInRange(0, fumbles)
 
 	return FootballStats{
@@ -461,8 +465,8 @@ func multiplyYearlyStatsByPlayerSkill(player Player, yearsofExperience int, stat
 		ReceivingTDs:          multiplyStatByPlayerSkill(player, yearsofExperience, stats.ReceivingTDs),
 		ReceivingTargets:      multiplyStatByPlayerSkill(player, yearsofExperience, stats.ReceivingTargets),
 		ReceivingYards:        multiplyStatByPlayerSkill(player, yearsofExperience, stats.ReceivingYards),
-		Fumbles:               multiplyStatByPlayerSkill(player, yearsofExperience, stats.Fumbles),
-		FumblesLost:           multiplyStatByPlayerSkill(player, yearsofExperience, stats.FumblesLost),
+		Fumbles:               stats.Fumbles,     // Don't scale fumbles by skill - they're random events
+		FumblesLost:           stats.FumblesLost, // Don't scale fumbles lost by skill
 		FieldGoals:            multiplyStatByPlayerSkill(player, yearsofExperience, stats.FieldGoals),
 		FieldGoalsMade:        multiplyStatByPlayerSkill(player, yearsofExperience, stats.FieldGoalsMade),
 		FieldGoalsMissed:      multiplyStatByPlayerSkill(player, yearsofExperience, stats.FieldGoalsMissed),
@@ -481,20 +485,63 @@ func normalInRange(low, high float64) float64 {
 	mean := (low + high) / 2
 	// Use 3 standard deviations to cover the range (99.7% of values)
 	stdDev := (high - low) / 6
-
 	result := rand.NormFloat64()*stdDev + mean
-
-	// Clamp to bounds for the rare outliers beyond 3 sigma
-	if result < low {
-		result = low
-	}
-	if result > high {
-		result = high
-	}
-
-	return result
+	return clampFloat(result, low, high)
 }
 
 func normalIntInRange(low, high int) int {
-	return int(normalInRange(float64(low), float64(high)+0.5))
+	result := roundToNearestInt(normalInRange(float64(low), float64(high)+0.5))
+	return clampInt(result, low, high)
+
+}
+
+// normalInRangeWithMeanBias generates a normally distributed value with a custom mean
+// meanBias: 0.0 = mean at low, 0.5 = mean at middle (default), 1.0 = mean at high
+func normalInRangeWithMeanBias(low, high float64, meanBias float64) float64 {
+	meanBias = clampFloat(meanBias, 0, 1)
+
+	mean := low + (high-low)*meanBias
+	// Use 3 standard deviations to cover the range (99.7% of values)
+	stdDev := (high - low) / 6
+	result := rand.NormFloat64()*stdDev + mean
+	return clampFloat(result, low, high)
+}
+
+// normalIntInRangeWithMeanBias generates a normally distributed int with a custom mean bias
+// meanBias: 0.0 = mean at low, 0.5 = mean at middle (default), 1.0 = mean at high
+func normalIntInRangeWithMeanBias(low, high int, meanBias float64) int {
+	result := roundToNearestInt(normalInRangeWithMeanBias(float64(low), float64(high)+0.5, meanBias))
+	// Clamp to ensure we stay within the specified integer bounds
+	return clampInt(result, low, high)
+}
+
+// nornmalizeYardsPerPlay ensures yards are consistent with attempts and capped at a realistic per-play max
+// Returns 0 if attempts is 0, otherwise caps at attempts * maxYardsPerPlay
+func nornmalizeYardsPerPlay(yards, attempts, maxYardsPerPlay int) int {
+	maxYards := attempts * maxYardsPerPlay
+	return clampInt(yards, 0, maxYards)
+}
+
+func roundToNearestInt(value float64) int {
+	return int(math.Round(value))
+}
+
+func clampInt(value, min, max int) int {
+	if value < min {
+		return min
+	}
+	if value > max {
+		return max
+	}
+	return value
+}
+
+func clampFloat(value, min, max float64) float64 {
+	if value < min {
+		return min
+	}
+	if value > max {
+		return max
+	}
+	return value
 }

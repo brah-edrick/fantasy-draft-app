@@ -350,7 +350,7 @@ func TestCreatePlayerCareer(t *testing.T) {
 func TestRealClockNow(t *testing.T) {
 	clock := RealClock{}
 	now := clock.Now()
-	
+
 	// Just verify it returns a valid time
 	if now.IsZero() {
 		t.Error("RealClock.Now() should not return zero time")
@@ -368,9 +368,9 @@ func TestGeneratePlayerGameStats(t *testing.T) {
 	}
 
 	tests := []struct {
-		position     string
-		checkStat    func(FootballStats) bool
-		description  string
+		position    string
+		checkStat   func(FootballStats) bool
+		description string
 	}{
 		{
 			position: "QB",
@@ -411,7 +411,7 @@ func TestGeneratePlayerGameStats(t *testing.T) {
 			position: "UNKNOWN",
 			checkStat: func(stats FootballStats) bool {
 				// Unknown position should return empty stats
-				return stats.PassingAttempts == 0 && stats.RushingAttempts == 0 && 
+				return stats.PassingAttempts == 0 && stats.RushingAttempts == 0 &&
 					stats.ReceivingReceptions == 0 && stats.FieldGoals == 0
 			},
 			description: "Unknown position should return empty stats",
@@ -481,7 +481,7 @@ func TestMultiplyStatByPlayerSkill(t *testing.T) {
 	t.Run("low skill player", func(t *testing.T) {
 		lowSkillPlayer := Player{Skill: 0.2}
 		result := multiplyStatByPlayerSkill(lowSkillPlayer, 0, 100)
-		
+
 		// Should be significantly reduced
 		if result >= 100 {
 			t.Errorf("Low skill player should have reduced stats, got %d from 100", result)
@@ -492,7 +492,7 @@ func TestMultiplyStatByPlayerSkill(t *testing.T) {
 	t.Run("high skill player", func(t *testing.T) {
 		highSkillPlayer := Player{Skill: 0.95}
 		result := multiplyStatByPlayerSkill(highSkillPlayer, 0, 100)
-		
+
 		// Should be close to original or slightly less
 		if result < 50 {
 			t.Errorf("High skill player should have stats close to original, got %d from 100", result)
@@ -586,4 +586,3 @@ func TestNormalIntInRange(t *testing.T) {
 		})
 	}
 }
-
