@@ -1,5 +1,5 @@
 # Start with the official Go image
-FROM golang:1.23-alpine
+FROM golang:1.24-alpine
 
 # Install "Air" for hot reloading
 RUN go install github.com/air-verse/air@v1.61.1
