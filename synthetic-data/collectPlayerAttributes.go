@@ -80,7 +80,7 @@ func NewPositionProfile() *PositionProfile {
 }
 
 func importRealData() map[string]any {
-	file, err := os.Open("synthetic-data/real-data.json") // you'll need to provide this file in the format specified
+	file, err := os.Open(os.Getenv("REAL_DATA_FILE")) // you'll need to provide this file in the format specified
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
 	}

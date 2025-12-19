@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -30,7 +29,6 @@ func createTeamRoster(teamID string) FootballTeamRoster {
 		PK: pkPlayers,
 	}
 
-	fmt.Printf("Roster created: %+v\n", roster)
 	return roster
 }
 

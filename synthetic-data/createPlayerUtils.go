@@ -41,7 +41,7 @@ func createNewPlayer(position Position, teamId string, generators PlayerGenerato
 		Weight:            weight,
 		Age:               age,
 		YearsOfExperience: yoe,
-		Status:            "Active",
+		Status:            "ACTIVE",
 		Skill:             generators.SkillGenerator(),
 		TeamID:            teamId,
 	}

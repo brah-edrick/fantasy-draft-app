@@ -45,10 +45,79 @@ docker exec -it fantasy-draft-app-db-1 psql -U fantasy_user -d fantasy_db
 ```
 *   Password is: `secret_password`
 
-## 4. Troubleshooting
+## 4. Database Seeding
+
+**Step 1: Start the Database**
+First, make sure the database is running:
+```bash
+docker-compose up -d db
+```
+
+**Step 2: Seed the Database**
+Run the seed script from the synthetic-data folder:
+```bash
+cd synthetic-data
+REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/synthetic-data/real-data.json" \
+DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
+go run . seed
+```
+
+Or using Docker (if you don't want Go installed locally):
+```bash
+docker-compose exec api sh -c "REAL_DATA_FILE=/app/synthetic-data/real-data.json cd /app/synthetic-data && go run . seed"
+```
+
+**Step 3: Verify the Data**
+Connect to the database and check the tables:
+```bash
+docker exec -it fantasy-draft-app-db-1 psql -U fantasy_user -d fantasy_db
+```
+
+Then run some queries:
+```sql
+-- Check table counts
+SELECT 'conferences' as table_name, COUNT(*) FROM conferences
+UNION ALL
+SELECT 'divisions', COUNT(*) FROM divisions
+UNION ALL
+SELECT 'pro_teams', COUNT(*) FROM pro_teams
+UNION ALL
+SELECT 'players', COUNT(*) FROM players
+UNION ALL
+SELECT 'yearly_stats', COUNT(*) FROM yearly_stats;
+
+-- View sample player data
+SELECT first_name, last_name, position, skill FROM players LIMIT 10;
+
+-- View sample yearly stats
+SELECT p.first_name, p.last_name, ys.year, ys.stats
+FROM yearly_stats ys
+JOIN players p ON ys.player_id = p.id
+LIMIT 5;
+```
+
+**Reset and Re-seed**
+To completely reset the database and seed fresh:
+```bash
+# Stop and remove the database volume
+docker-compose down -v
+
+# Restart (this re-runs schema.sql)
+docker-compose up -d db
+
+# Wait for DB to be ready, then seed
+sleep 5
+cd synthetic-data
+REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/synthetic-data/real-data.json" \
+DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
+go run . seed
+```
+
+## 5. Troubleshooting
 **Rebuild everything from scratch**
 If things get weird, nuke it and restart:
 ```bash
 docker-compose down -v
 docker-compose up --build
 ```
+

@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Enums
 CREATE TYPE position_enum AS ENUM (
-    'QB', 'RB', 'WR', 'TE', 'K', 'DST', -- Football
+    'QB', 'RB', 'WR', 'TE', 'PK', -- Football
     'PG', 'SG', 'SF', 'PF', 'C',          -- Basketball
     'SP', 'RP', 'CATCHER', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH' -- Baseball
 );
@@ -30,6 +30,7 @@ CREATE TABLE divisions (
 CREATE TABLE pro_teams (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     city TEXT NOT NULL,
+    state TEXT,  -- Added to match Go type
     name TEXT NOT NULL,
     abbreviation TEXT NOT NULL, -- e.g. "MIN"
     logo_url TEXT,
@@ -51,11 +52,12 @@ CREATE TABLE players (
     weight INT, -- in lbs
     age INT,
     years_of_experience INT CHECK (years_of_experience >= 0),
+    draft_year INT,  -- Added to match Go type
     jersey_number INT,
     
     -- Meta
     status player_status_enum NOT NULL DEFAULT 'ACTIVE',
-    position_skill_factor DECIMAL(5,2), -- e.g. 0.95
+    skill DECIMAL(5,4), -- renamed from position_skill_factor, now 0.0000 - 1.0000
     headshot_url TEXT,
     
     created_at TIMESTAMP DEFAULT NOW(),
