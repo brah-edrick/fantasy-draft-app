@@ -113,11 +113,48 @@ DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?
 go run . seed
 ```
 
-## 5. Troubleshooting
+## 5. GraphQL
+
+**Regenerate GraphQL Code**
+Run this whenever you edit `graph/schema.graphql`:
+```bash
+go run github.com/99designs/gqlgen generate
+```
+
+**Start the GraphQL Server (locally)**
+```bash
+DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
+go run ./cmd/server
+```
+
+**Start with Docker**
+```bash
+docker-compose up
+```
+
+Then visit:
+- **GraphQL Playground**: http://localhost:8080/playground
+- **GraphQL Endpoint**: http://localhost:8080/graphql
+
+**Example Query**
+```graphql
+query {
+  teams {
+    city
+    name
+    players {
+      firstName
+      lastName
+      position
+    }
+  }
+}
+```
+
+## 6. Troubleshooting
 **Rebuild everything from scratch**
 If things get weird, nuke it and restart:
 ```bash
 docker-compose down -v
 docker-compose up --build
 ```
-

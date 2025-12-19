@@ -1,0 +1,191 @@
+# =============================================================================
+# GraphQL Schema for Fantasy Draft API
+# =============================================================================
+# This file defines the shape of your API - what data clients can query.
+# Think of it as a "contract" between your frontend and backend.
+# =============================================================================
+
+# =============================================================================
+# TYPES - These define the shape of your data objects
+# =============================================================================
+
+"""
+A professional sports conference (e.g., AFC, NFC)
+"""
+type Conference {
+  id: ID!
+  name: String!
+  divisions: [Division!]!
+}
+
+"""
+A division within a conference (e.g., AFC East, NFC West)
+"""
+type Division {
+  id: ID!
+  name: String!
+  conference: Conference!
+  teams: [Team!]!
+}
+
+"""
+A professional sports team
+"""
+type Team {
+  id: ID!
+  city: String!
+  state: String
+  name: String!
+  abbreviation: String!
+  division: Division!
+  players: [Player!]!
+}
+
+"""
+A professional player
+"""
+type Player {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  position: Position!
+  team: Team!
+  height: Int
+  weight: Int
+  age: Int
+  yearsOfExperience: Int
+  draftYear: Int
+  jerseyNumber: Int
+  status: PlayerStatus!
+  skill: Float
+  yearlyStats: [YearlyStat!]!
+}
+
+"""
+Yearly statistics for a player
+"""
+type YearlyStat {
+  id: ID!
+  year: Int!
+  sportType: String!
+  stats: FootballStats
+  fantasyPoints: Float!
+  gamesPlayed: Int
+  fantasyPointsPerGame: Float
+}
+
+"""
+Football-specific statistics
+"""
+type FootballStats {
+  # Passing
+  passingAttempts: Int!
+  passingCompletions: Int!
+  passingYards: Int!
+  passingTDs: Int!
+  passingInterceptions: Int!
+
+  # Rushing
+  rushingAttempts: Int!
+  rushingYards: Int!
+  rushingTDs: Int!
+
+  # Receiving
+  receivingTargets: Int!
+  receivingReceptions: Int!
+  receivingYards: Int!
+  receivingTDs: Int!
+
+  # Fumbles
+  fumbles: Int!
+  fumblesLost: Int!
+
+  # Kicking
+  fieldGoals: Int!
+  fieldGoalsMade: Int!
+  fieldGoalsMissed: Int!
+  extraPoints: Int!
+  extraPointsMade: Int!
+  extraPointsMissed: Int!
+}
+
+# =============================================================================
+# ENUMS - Fixed sets of values
+# =============================================================================
+
+enum Position {
+  QB
+  RB
+  WR
+  TE
+  PK
+}
+
+enum PlayerStatus {
+  ACTIVE
+  INJURED
+  PUP
+  SUSPENDED
+  RETIRED
+}
+
+# =============================================================================
+# QUERIES - The "read" operations clients can perform
+# =============================================================================
+
+type Query {
+  # ---------- Conferences ----------
+  """
+  Get all conferences
+  """
+  conferences: [Conference!]!
+
+  """
+  Get a specific conference by ID
+  """
+  conference(id: ID!): Conference
+
+  # ---------- Divisions ----------
+  """
+  Get all divisions
+  """
+  divisions: [Division!]!
+
+  """
+  Get a specific division by ID
+  """
+  division(id: ID!): Division
+
+  # ---------- Teams ----------
+  """
+  Get all teams
+  """
+  teams: [Team!]!
+
+  """
+  Get a specific team by ID
+  """
+  team(id: ID!): Team
+
+  # ---------- Players ----------
+  """
+  Get all players, optionally filtered
+  """
+  players(
+    position: Position
+    teamId: ID
+    limit: Int
+    offset: Int
+  ): [Player!]!
+
+  """
+  Get a specific player by ID
+  """
+  player(id: ID!): Player
+
+  """
+  Search players by name
+  """
+  searchPlayers(query: String!, limit: Int): [Player!]!
+}

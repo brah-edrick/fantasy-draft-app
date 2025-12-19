@@ -60,8 +60,8 @@ func TestCreateNewPlayer(t *testing.T) {
 	if player.DraftYear != 2022 { // 2025 - 3
 		t.Errorf("Expected draft year 2022, got %d", player.DraftYear)
 	}
-	if player.Status != "Active" {
-		t.Errorf("Expected status 'Active', got '%s'", player.Status)
+	if player.Status != "ACTIVE" {
+		t.Errorf("Expected status 'ACTIVE', got '%s'", player.Status)
 	}
 	if player.Skill != 0.75 {
 		t.Errorf("Expected skill 0.75, got %f", player.Skill)
@@ -290,7 +290,7 @@ func TestCreateSkillForDepthPosition(t *testing.T) {
 		// Run many iterations to hopefully hit the clamp boundaries
 		minFound := 1.0
 		maxFound := 0.0
-		
+
 		for range 10000 {
 			skill := createSkillForDepthPosition(0, 3)
 			if skill < minFound {
@@ -299,13 +299,13 @@ func TestCreateSkillForDepthPosition(t *testing.T) {
 			if skill > maxFound {
 				maxFound = skill
 			}
-			
+
 			// Verify always within bounds
 			if skill < 0.15 || skill > 0.95 {
 				t.Errorf("Skill %f outside bounds [0.15, 0.95]", skill)
 			}
 		}
-		
+
 		// We should have values near the boundaries
 		if minFound > 0.3 {
 			t.Logf("Warning: Minimum skill found (%f) seems high, clamping may not be tested", minFound)
@@ -359,7 +359,7 @@ func TestGetPlayerGenerators(t *testing.T) {
 	// This function uses a singleton pattern with sync.Once
 	// We can test that it returns valid generators
 	rng := rand.New(rand.NewSource(12345))
-	
+
 	// Create a mock stats aggregator
 	mockAggregator := func() AggregatedPlayerStats {
 		return AggregatedPlayerStats{
@@ -562,4 +562,3 @@ func TestCreatePositionsGeneratorsFromStats(t *testing.T) {
 		}
 	}
 }
-
