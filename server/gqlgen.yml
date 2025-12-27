@@ -1,0 +1,64 @@
+# gqlgen Configuration
+# This file tells gqlgen how to generate Go code from your GraphQL schema.
+
+# Where to find the GraphQL schema
+schema:
+  - graph/*.graphql
+
+# Where to put the generated code
+exec:
+  filename: graph/generated.go
+  package: graph
+
+# Where the models should be generated
+model:
+  filename: graph/model/models_gen.go
+  package: model
+
+# Where to put the resolver implementations
+resolver:
+  layout: follow-schema
+  dir: graph
+  package: graph
+  filename_template: "{name}.resolvers.go"
+
+# Map GraphQL types to existing Go types (so gqlgen doesn't regenerate them)
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graphql.Int32
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graphql.Int32
+  Player:
+    fields:
+      team:
+        resolver: true
+      fullName:
+        resolver: true
+      yearlyStats:
+        resolver: true
+    extraFields:
+      TeamID:
+        type: string
+  Team:
+    fields:
+      players:
+        resolver: true
+      division:
+        resolver: true
+  Division:
+    fields:
+      teams:
+        resolver: true
+      conference:
+        resolver: true
+  Conference:
+    fields:
+      divisions:
+        resolver: true

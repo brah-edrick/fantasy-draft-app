@@ -28,17 +28,11 @@ We're assuming you want this to run in the container, not your local machine.
 **Tidy Dependencies (Install new packages)**
 Run this after adding an import to your code or changing `go.mod`:
 ```bash
-docker run --rm -v "$PWD":/app -w /app golang:1.23-alpine go mod tidy
+docker run --rm -v "$PWD/server":/app -w /app golang:1.23-alpine go mod tidy
 ```
-*   This mounts your folder, runs `go mod tidy`, and updates your `go.mod`/`go.sum` files locally.
+*   This mounts your server folder, runs `go mod tidy`, and updates your `go.mod`/`go.sum` files locally.
 
-## 3. Database & SQLC
-**Generate Go Code from SQL**
-Run this whenever you edit `db/query.sql` or `db/schema.sql`:
-```bash
-docker run --rm -v "$PWD":/src -w /src sqlc/sqlc generate
-```
-
+## 3. Database
 **Connect to DB via CLI**
 ```bash
 docker exec -it fantasy-draft-app-db-1 psql -U fantasy_user -d fantasy_db
@@ -56,8 +50,8 @@ docker-compose up -d db
 **Step 2: Seed the Database**
 Run the seed script from the synthetic-data folder:
 ```bash
-cd synthetic-data
-REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/synthetic-data/real-data.json" \
+cd server/synthetic-data
+REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/server/synthetic-data/real-data.json" \
 DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
 go run . seed
 ```
@@ -107,8 +101,8 @@ docker-compose up -d db
 
 # Wait for DB to be ready, then seed
 sleep 5
-cd synthetic-data
-REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/synthetic-data/real-data.json" \
+cd server/synthetic-data
+REAL_DATA_FILE="/Users/brandon/Projects/fantasy-draft-app/server/synthetic-data/real-data.json" \
 DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
 go run . seed
 ```
@@ -116,13 +110,15 @@ go run . seed
 ## 5. GraphQL
 
 **Regenerate GraphQL Code**
-Run this whenever you edit `graph/schema.graphql`:
+Run this whenever you edit `server/graph/schema.graphql`:
 ```bash
+cd server
 go run github.com/99designs/gqlgen generate
 ```
 
 **Start the GraphQL Server (locally)**
 ```bash
+cd server
 DATABASE_URL="postgres://fantasy_user:secret_password@localhost:5432/fantasy_db?sslmode=disable" \
 go run ./cmd/server
 ```

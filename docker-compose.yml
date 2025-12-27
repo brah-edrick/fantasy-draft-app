@@ -15,14 +15,14 @@ services:
       # Persist data so it doesn't vanish when you restart docker
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fantasy_user -d fantasy_db"]
+      test: [ "CMD-SHELL", "pg_isready -U fantasy_user -d fantasy_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # 2. The Go Application Service
   api:
-    build: .
+    build: ./server
     ports:
       - "8080:8080"
     depends_on:
@@ -33,7 +33,7 @@ services:
       - DATABASE_URL=postgres://fantasy_user:secret_password@db:5432/fantasy_db?sslmode=disable
     volumes:
       # Sync your local folder to the container so changes reflect instantly
-      - .:/app
+      - ./server:/app
 
 volumes:
   postgres_data:
